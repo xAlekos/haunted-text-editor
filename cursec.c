@@ -9,7 +9,7 @@ void printgapbuftocurses(GapBuf* gapbuf){
       for(int i = 0; i<gap_front(gapbuf);i++){
         addch(gapbuf->buff[i]);       
     }  
-    addch('|');
+	addch('|');
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
     }
@@ -29,13 +29,13 @@ int main()
     while(ch != '-'){
         ch = getch();
         switch(ch){
-            case KEY_BACKSPACE : backspace(nuovobuf); break;
-            case KEY_DC : del(nuovobuf); break;
-            case KEY_LEFT : cursor_left(nuovobuf); break;
-            case KEY_RIGHT : cursor_right(nuovobuf); break;
-            default : insert(nuovobuf, ch); break;
+            case KEY_BACKSPACE : backspace(nuovobuf); printgapbuftocurses(nuovobuf); break;
+            case KEY_DC : del(nuovobuf); printgapbuftocurses(nuovobuf); break;
+            case KEY_LEFT : cursor_left(nuovobuf); printgapbuftocurses(nuovobuf); break;
+            case KEY_RIGHT : if(cursor_right(nuovobuf)); printgapbuftocurses(nuovobuf); break;
+            default : insert(nuovobuf, ch); printgapbuftocurses(nuovobuf); break;
         }
-        printgapbuftocurses(nuovobuf);
+        
     }
     endwin();
     printf("cazzo marmelalta");

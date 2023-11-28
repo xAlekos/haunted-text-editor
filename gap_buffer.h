@@ -89,10 +89,17 @@ void cursor_left(GapBuf* gapbuf){
 
 }
 
-void cursor_right(GapBuf* gapbuf){
-    if (gapbuf->cursor < gapbuf->buff_size)
-        gapbuf->buff[gapbuf->cursor++] = gapbuf->buff[gapbuf->gapend++];
+bool cursor_right(GapBuf* gapbuf){
+    if(gapbuf->gapend == gapbuf->buff_size) 
+        return false;
 
+    if (gapbuf->cursor < gapbuf->buff_size){
+        gapbuf->buff[gapbuf->cursor++] = gapbuf->buff[gapbuf->gapend++];
+        return true;
+    }
+    else  
+        return false;
+    
 }
 
 void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
