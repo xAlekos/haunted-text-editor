@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MIN_BUF_SIZE 5
 #define MAX_BUF_SIZE 65535
@@ -20,10 +21,10 @@ typedef struct gap_buf{
 
 GapBuf* newbuffer(int initsize){
     initsize = initsize > MIN_BUF_SIZE ? initsize : MIN_BUF_SIZE;
-    GapBuf* newgap_buf = malloc(sizeof(GapBuf));
+    GapBuf* newgap_buf = (GapBuf*)malloc(sizeof(GapBuf));
     if (!newgap_buf)
         return NULL;
-    char* newbuff = malloc(initsize);
+    char* newbuff = (char*)malloc(initsize);
     if (!newbuff)
         return NULL;
     newgap_buf->buff = newbuff;
@@ -47,23 +48,23 @@ void move_back(GapBuf* gapbuf, char* new_buf , int new_size){
 
 }
 
-void shrink_buffer(GapBuf* gapbuf, int newsize){
+void shrink_buffer(GapBuf* gapbuf, int newsize){ //dimezza il buffer quando il gap è troppo grande rispetto ad i caratteri utilizzati
     newsize = newsize >  MIN_BUF_SIZE ? newsize : MIN_BUF_SIZE;
     if(newsize < gap_used(gapbuf))
         return;
     move_back(gapbuf, gapbuf->buff, newsize); //faccio moveback sullo stesso buffer con nuova size più piccola così che quello che era prima il back si avvicina al front,
     gapbuf->gapend = newsize-gap_back(gapbuf);//poi tutto ciò che rimane in fondo verrà cancellato quando si reallocherà
     gapbuf->buff_size = newsize;
-    char* newbuff = realloc(gapbuf->buff, newsize);
+    char* newbuff = (char*)realloc(gapbuf->buff, newsize);
     if(newbuff)
         gapbuf->buff = newbuff;
 }
 
-bool grow_buffer(GapBuf* gapbuf, int newsize){
+bool grow_buffer(GapBuf* gapbuf, int newsize){ //raddoppia il buffer quando il gap non è più sufficente
     newsize = newsize < SIZE_MAX ? newsize : SIZE_MAX;
     if(gapbuf->buff_size >= newsize)
         return false;
-    char* newbuff = realloc(gapbuf->buff, newsize);
+    char* newbuff = (char*)realloc(gapbuf->buff, newsize);
     move_back(gapbuf,newbuff,newsize);
     gapbuf->buff = newbuff;
     gapbuf->gapend = newsize - gap_back(gapbuf);
@@ -94,14 +95,14 @@ void cursor_right(GapBuf* gapbuf){
 
 }
 
-void backspace(GapBuf* gapbuf){
+void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
     if(gapbuf->cursor > 0)
         gapbuf->cursor--;
     if (gap_used(gapbuf) < gapbuf->buff_size/4)
         shrink_buffer(gapbuf, gapbuf->buff_size/2);
 }
 
-void delete(GapBuf* gapbuf){
+void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
     if(gapbuf->gapend < gapbuf -> buff_size)
         gapbuf->gapend++;
     if (gap_used(gapbuf) < gapbuf->buff_size/4)
@@ -116,12 +117,7 @@ void printgapbuff(GapBuf* gapbuf){
             
     }
     
-    for(int i = gapbuf->cursor; i<gapbuf->gapend;i++){
-        if(i == gapbuf->cursor)
-            printf("|");
-        else
-            printf("_");
-    }
+    printf("|");
     
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         printf("%c",gapbuf->buff[i]);
@@ -129,21 +125,6 @@ void printgapbuff(GapBuf* gapbuf){
     printf("\n");
 }
 
-
-int main(){
-    GapBuf* nuovobuf = newbuffer(10);
-    char ch = 'a';
-    while(ch != '-'){
-        scanf("%c",&ch);
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF) { }
-        switch(ch){
-            case '*' : backspace(nuovobuf); break;
-            case '#' : delete(nuovobuf); break;
-            case '4' : cursor_left(nuovobuf); break;
-            case '6' : cursor_right(nuovobuf); break;
-            default : insert(nuovobuf, ch); break;
-        }
-        printgapbuff(nuovobuf);
-    }
-}
+/*int main(){
+    
+}*/

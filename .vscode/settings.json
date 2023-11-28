@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "curses.h": "c",
+        "ncurses.h": "c",
+        "locale.h": "c",
+        "stdio.h": "c",
+        "cursesw.h": "c",
+        "form.h": "c"
+    }
+}
