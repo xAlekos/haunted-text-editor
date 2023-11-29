@@ -3,6 +3,7 @@
 #include <locale.h>
 #include "gap_buffer.h"
 
+#define ctrl(x)           ((x) & 0x1f)
 
 void printgapbuftocurses(GapBuf* gapbuf){
     erase();  
@@ -20,13 +21,13 @@ int main()
 {	
     setlocale(LC_ALL, "it_IT.UTF-8");
 	initscr();			/* Start curses mode 		  */
-	cbreak();
+	raw();
     noecho();
     curs_set(0);
     keypad(stdscr,true);
     GapBuf* nuovobuf = newbuffer(10);
     int ch = 0;
-    while(ch != '-'){
+    while(ch != ctrl('x')){
         ch = getch();
         switch(ch){
             case KEY_BACKSPACE : backspace(nuovobuf); printgapbuftocurses(nuovobuf); break;
@@ -37,7 +38,8 @@ int main()
         }
         
     }
+    freebuf(nuovobuf);
     endwin();
-    printf("cazzo marmelalta");
+    printf("\ngoodbye");
     return 0;
 }
