@@ -6,6 +6,12 @@
 #define ctrl(x)           ((x) & 0x1f)
 
 void printgapbuftocurses(GapBuf* gapbuf){
+
+    int row,col ;
+    int x;
+    int y;
+    getyx(stdscr, y, x);
+    getmaxyx(stdscr,row,col);
     erase();  
       for(int i = 0; i<gap_front(gapbuf);i++){
         addch(gapbuf->buff[i]);       
@@ -14,6 +20,8 @@ void printgapbuftocurses(GapBuf* gapbuf){
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
     }
+    mvprintw(row/2 , 0,"Line: %d\nTotlines:%d",gapbuf->line,gapbuf->totlines);
+    move(y,x+1);
     refresh();
 }
 
@@ -38,8 +46,8 @@ int main()
         }
         
     }
-    freebuf(nuovobuf);
     endwin();
-    printf("\ngoodbye");
+    printf("\nLINES : %d\n",nuovobuf->totlines);
+    freebuf(nuovobuf);
     return 0;
 }

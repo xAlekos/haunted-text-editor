@@ -8,6 +8,8 @@
 #define MAX_BUF_SIZE 65535
 
 typedef struct gap_buf{
+    int totlines;
+    int line;
     char* buff;
     int buff_size;
     int cursor; //first gapspace
@@ -30,6 +32,8 @@ GapBuf* newbuffer(int initsize){
     newgap_buf->buff = newbuff;
     newgap_buf->buff_size = initsize;
     newgap_buf->cursor = 0;
+    newgap_buf->totlines = 0;
+    newgap_buf->line = 0;
     newgap_buf->gapend = initsize;
     return newgap_buf;
 }
@@ -80,12 +84,20 @@ bool insert(GapBuf* gapbuf,char c){
             return false;
     }
     gapbuf->buff[gapbuf->cursor++] = c;
+    if(c == '\n'){ //controlla se sei andato a capo, aggiungendo una riga
+        gapbuf->totlines+=1;
+        gapbuf->line+=1;
+    }
     return true;
 }
 
 void cursor_left(GapBuf* gapbuf){
-    if (gapbuf->cursor > 0)
+    if (gapbuf->cursor > 0){
+        if(gapbuf->buff[gapbuf->cursor - 1] == '\n')
+            gapbuf->line-=1; //controlla se sei salito di una riga
         gapbuf->buff[--gapbuf->gapend] = gapbuf->buff[--gapbuf->cursor];
+        
+    }
 
 }
 
@@ -94,6 +106,8 @@ bool cursor_right(GapBuf* gapbuf){
         return false;
 
     if (gapbuf->cursor < gapbuf->buff_size){
+        if(gapbuf->buff[gapbuf->gapend] == '\n') //controlla se sei sceso nella prossima riga
+            gapbuf->line +=1;
         gapbuf->buff[gapbuf->cursor++] = gapbuf->buff[gapbuf->gapend++];
         return true;
     }
@@ -103,15 +117,23 @@ bool cursor_right(GapBuf* gapbuf){
 }
 
 void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
-    if(gapbuf->cursor > 0)
+    if(gapbuf->cursor > 0){
         gapbuf->cursor--;
+        if(gapbuf->buff[gapbuf->cursor] == '\n'){
+            gapbuf->line -=1;//controlla se sei salito di una riga
+            gapbuf->totlines -= 1;
+        }
+    }
     if (gap_used(gapbuf) < gapbuf->buff_size/4)
         shrink_buffer(gapbuf, gapbuf->buff_size/2);
 }
 
 void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
-    if(gapbuf->gapend < gapbuf -> buff_size)
+    if(gapbuf->gapend < gapbuf -> buff_size){
+        if(gapbuf->buff[gapbuf->gapend] == '\n')//controlla se hai cancellato una line
+            gapbuf->totlines-=1;
         gapbuf->gapend++;
+    }
     if (gap_used(gapbuf) < gapbuf->buff_size/4)
         shrink_buffer(gapbuf, gapbuf->buff_size/2);
 
