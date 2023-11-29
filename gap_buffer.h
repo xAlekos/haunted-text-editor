@@ -144,17 +144,33 @@ void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
 
 
 int givecolumn(GapBuf* gapbuf){
-    int i = 0;
-    while(gapbuf->cursor - i != 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
+    int i = 1;
+    while(gapbuf->cursor - i >= 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
         i++;
-    if(gapbuf->cursor == 0)
-        return 1;
-    else
         return i;
 
 
 }
 
+void cursor_up(GapBuf* gapbuf){
+    int col = givecolumn(gapbuf);
+    int line = gapbuf->line; 
+    if(gapbuf->line > 1){
+        while((givecolumn(gapbuf) > col   || gapbuf->line != line - 1))
+            cursor_left(gapbuf);
+            
+    }
+}
+
+void cursor_down(GapBuf* gapbuf){
+    int col = givecolumn(gapbuf);
+    int line = gapbuf->line; 
+    if(gapbuf->line < gapbuf->totlines){
+        while((givecolumn(gapbuf) < col   || gapbuf->line != line + 1))
+            cursor_right(gapbuf);
+            
+    }
+}
 
 
 

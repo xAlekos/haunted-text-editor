@@ -35,6 +35,7 @@ int main()
     keypad(stdscr,true);
     GapBuf* nuovobuf = newbuffer(10);
     int ch = 0;
+    printgapbuftocurses(nuovobuf);
     while(ch != ctrl('x')){
         ch = getch();
         switch(ch){
@@ -42,6 +43,8 @@ int main()
             case KEY_DC : del(nuovobuf); printgapbuftocurses(nuovobuf); break;
             case KEY_LEFT : cursor_left(nuovobuf); printgapbuftocurses(nuovobuf); break;
             case KEY_RIGHT : if(cursor_right(nuovobuf)); printgapbuftocurses(nuovobuf); break;
+            case KEY_UP : cursor_up(nuovobuf); printgapbuftocurses(nuovobuf); break; 
+            case KEY_DOWN : cursor_down(nuovobuf); printgapbuftocurses(nuovobuf); break; 
             default : insert(nuovobuf, ch); printgapbuftocurses(nuovobuf); break;
         }
         
