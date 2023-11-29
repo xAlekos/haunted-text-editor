@@ -6,6 +6,7 @@
 
 #define MIN_BUF_SIZE 5
 #define MAX_BUF_SIZE 65535
+#define CURSPOS (gapbuf->cursor)
 
 typedef struct gap_buf{
     int totlines;
@@ -32,8 +33,8 @@ GapBuf* newbuffer(int initsize){
     newgap_buf->buff = newbuff;
     newgap_buf->buff_size = initsize;
     newgap_buf->cursor = 0;
-    newgap_buf->totlines = 0;
-    newgap_buf->line = 0;
+    newgap_buf->totlines = 1;
+    newgap_buf->line = 1;
     newgap_buf->gapend = initsize;
     return newgap_buf;
 }
@@ -139,6 +140,24 @@ void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
 
 
 }
+
+
+
+int givecolumn(GapBuf* gapbuf){
+    int i = 0;
+    while(gapbuf->cursor - i != 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
+        i++;
+    if(gapbuf->cursor == 0)
+        return 1;
+    else
+        return i;
+
+
+}
+
+
+
+
 
 void printgapbuff(GapBuf* gapbuf){
     for(int i = 0; i<gap_front(gapbuf);i++){

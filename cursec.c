@@ -20,7 +20,7 @@ void printgapbuftocurses(GapBuf* gapbuf){
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
     }
-    mvprintw(row/2 , 0,"Line: %d\nTotlines:%d",gapbuf->line,gapbuf->totlines);
+    mvprintw(row/2 , 0,"Line: %d\nCol: %d\nTotlines:%d",gapbuf->line,givecolumn(gapbuf),gapbuf->totlines);
     move(y,x+1);
     refresh();
 }
