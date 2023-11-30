@@ -142,8 +142,8 @@ void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
 }
 
 
-
-int givecolumn(GapBuf* gapbuf){
+int givecolumn(GapBuf* gapbuf){ //funzione che ti ritorna in quale colonna
+                                 //si trova il cursore(serve a cursup e cursor down)
     int i = 1;
     while(gapbuf->cursor - i >= 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
         i++;
@@ -164,11 +164,16 @@ void cursor_up(GapBuf* gapbuf){
 
 void cursor_down(GapBuf* gapbuf){
     int col = givecolumn(gapbuf);
+    int col_now;
     int line = gapbuf->line; 
     if(gapbuf->line < gapbuf->totlines){
-        while((givecolumn(gapbuf) < col   || gapbuf->line != line + 1))
-            cursor_right(gapbuf);
-            
+        while(givecolumn(gapbuf) < col   || gapbuf->line < line + 1){
+            if(!cursor_right(gapbuf))
+                break;
+            if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->cursor] == '\n')
+                break;
+        }
+          //TODO SISTEMARE QUESTO WHILE PERCHE' ENTRA IN LOOP INFINITO  
     }
 }
 
