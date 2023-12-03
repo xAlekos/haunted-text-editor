@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <locale.h>
 #include "gap_buffer.h"
-
 #define ctrl(x)           ((x) & 0x1f)
 
 void printgapbuftocurses(GapBuf* gapbuf){
@@ -16,7 +15,11 @@ void printgapbuftocurses(GapBuf* gapbuf){
       for(int i = 0; i<gap_front(gapbuf);i++){
         addch(gapbuf->buff[i]);       
     }  
-	addch('|');
+	//addch('|');
+    for(int i = gap_front(gapbuf); i<gapbuf->gapend;i++){
+        addch('_');
+    }
+
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
     }

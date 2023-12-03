@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MIN_BUF_SIZE 5
+#define MIN_BUF_SIZE 10
 #define MAX_BUF_SIZE 65535
 #define CURSPOS (gapbuf->cursor)
 
@@ -47,14 +47,14 @@ void freebuf(GapBuf* gapbuf){
 }
 
 void move_back(GapBuf* gapbuf, char* new_buf , int new_size){
-    memmove(new_buf + new_size - gap_back(gapbuf), gapbuf->buff + gap_back(gapbuf),gap_back(gapbuf));
+    memmove(new_buf + new_size - gap_back(gapbuf), gapbuf->buff + gapbuf->gapend,gap_back(gapbuf));
             // nel back del nuovo buffer            //dal back del vecchio buffer , tutti gli elementi nel back
 
 
 }
 
-void shrink_buffer(GapBuf* gapbuf, int newsize){ //dimezza il buffer quando il gap è troppo grande rispetto ad i caratteri utilizzati
-    newsize = newsize >  MIN_BUF_SIZE ? newsize : MIN_BUF_SIZE;
+void shrink_buffer(GapBuf* gapbuf, int newsize){ //dimezza il buffer quando il gap è troppo grande rispetto ad i caratteri utilizzati    newsize = newsize >  MIN_BUF_SIZE ? newsize : MIN_BUF_SIZE;
+    newsize = newsize < MIN_BUF_SIZE ? MIN_BUF_SIZE : newsize;
     if(newsize < gap_used(gapbuf))
         return;
     move_back(gapbuf, gapbuf->buff, newsize); //faccio moveback sullo stesso buffer con nuova size più piccola così che quello che era prima il back si avvicina al front,
