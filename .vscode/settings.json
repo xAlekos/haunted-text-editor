@@ -5,6 +5,7 @@
         "locale.h": "c",
         "stdio.h": "c",
         "cursesw.h": "c",
-        "form.h": "c"
+        "form.h": "c",
+        "stdlib.h": "c"
     }
 }

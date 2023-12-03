@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MIN_BUF_SIZE 10
+#define MIN_BUF_SIZE 2
 #define MAX_BUF_SIZE 65535
 #define CURSPOS (gapbuf->cursor)
 
@@ -69,8 +69,11 @@ bool grow_buffer(GapBuf* gapbuf, int newsize){ //raddoppia il buffer quando il g
     newsize = newsize < SIZE_MAX ? newsize : SIZE_MAX;
     if(gapbuf->buff_size >= newsize)
         return false;
-    char* newbuff = (char*)realloc(gapbuf->buff, newsize);
-    move_back(gapbuf,newbuff,newsize);
+    char* newbuff = (char*)malloc(newsize); //alloca il nuovo buffer e copia il contenuto di quello vecchio così com'è
+    memmove(newbuff,gapbuf->buff,gapbuf->buff_size); 
+    if (!newbuff) return false;
+    move_back(gapbuf,newbuff,newsize); //dopodichè sposta il back verso la fine
+    free(gapbuf->buff);                 //del nuovo buf così da creare nuovo spazio in cui scrivere, poi libera la memoria del vecchio buffer 
     gapbuf->buff = newbuff;
     gapbuf->gapend = newsize - gap_back(gapbuf);
     gapbuf->buff_size = newsize;

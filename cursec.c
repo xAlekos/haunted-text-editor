@@ -36,7 +36,7 @@ int main()
     noecho();
     curs_set(0);
     keypad(stdscr,true);
-    GapBuf* nuovobuf = newbuffer(10);
+    GapBuf* nuovobuf = newbuffer(2);
     int ch = 0;
     printgapbuftocurses(nuovobuf);
     while(ch != ctrl('x')){
