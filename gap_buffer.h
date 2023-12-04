@@ -170,10 +170,10 @@ void cursor_down(GapBuf* gapbuf){
     int col_now;
     int line = gapbuf->line; 
     if(gapbuf->line < gapbuf->totlines){
-        while(givecolumn(gapbuf) < col   || gapbuf->line < line + 1){
+        while((col_now = givecolumn(gapbuf)) < col   || gapbuf->line < line + 1){
             if(!cursor_right(gapbuf))
                 break;
-            if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->cursor] == '\n')
+            if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->gapend] == '\n')
                 break;
         }
           //TODO SISTEMARE QUESTO WHILE PERCHE' ENTRA IN LOOP INFINITO  

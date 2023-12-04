@@ -12,13 +12,13 @@ void printgapbuftocurses(GapBuf* gapbuf){
     getyx(stdscr, y, x);
     getmaxyx(stdscr,row,col);
     erase();  
-      for(int i = 0; i<gap_front(gapbuf);i++){
+    for(int i = 0; i<gap_front(gapbuf);i++){
         addch(gapbuf->buff[i]);       
     }  
-	//addch('|');
-    for(int i = gap_front(gapbuf); i<gapbuf->gapend;i++){
+	addch('|');
+    /*for(int i = gap_front(gapbuf); i<gapbuf->gapend;i++){
         addch('_');
-    }
+    }*/
 
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
