@@ -6,7 +6,7 @@
 
 void printgapbuftocurses(GapBuf* gapbuf){
 
-    int row,col ;
+    int row,col;
     int x;
     int y;
     getyx(stdscr, y, x);
@@ -23,7 +23,7 @@ void printgapbuftocurses(GapBuf* gapbuf){
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
     }
-    mvprintw(row/2 , 0,"Line: %d\nCol: %d\nTotlines:%d",gapbuf->line,givecolumn(gapbuf),gapbuf->totlines);
+    mvprintw(row - 1 , 0,"Ln: %d Col; %d",gapbuf->line,givecolumn(gapbuf));
     move(y,x+1);
     refresh();
 }

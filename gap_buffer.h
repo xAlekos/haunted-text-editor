@@ -11,10 +11,11 @@
 typedef struct gap_buf{
     int totlines;
     int line;
+    int col_mem;
     char* buff;
     int buff_size;
     int cursor; //first gapspace
-    int gapend; //last gapspace
+    int gapend; //primo carattere dopo il gap
 } GapBuf;
 
 #define gap_back(buf) ((buf)->buff_size - (buf)->gapend) //dim testo dopo il gap
@@ -35,6 +36,7 @@ GapBuf* newbuffer(int initsize){
     newgap_buf->cursor = 0;
     newgap_buf->totlines = 1;
     newgap_buf->line = 1;
+    newgap_buf->col_mem = 1;
     newgap_buf->gapend = initsize;
     return newgap_buf;
 }
@@ -88,11 +90,23 @@ bool insert(GapBuf* gapbuf,char c){
             return false;
     }
     gapbuf->buff[gapbuf->cursor++] = c;
+    gapbuf->col_mem+=1; //mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore(in questo caso verso destra)
     if(c == '\n'){ //controlla se sei andato a capo, aggiungendo una riga
         gapbuf->totlines+=1;
+        gapbuf->col_mem=1; //porta a 0 lo spostamento orizzontale del cursore da mentenere in memoria(sei andato a capo)
         gapbuf->line+=1;
     }
     return true;
+}
+
+int givecolumn(GapBuf* gapbuf){ //funzione che ti ritorna in quale colonna
+                                 //si trova il cursore(serve a cursup e cursor down)
+    int i = 1;
+    while(gapbuf->cursor - i >= 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
+        i++;
+        return i;
+
+
 }
 
 void cursor_left(GapBuf* gapbuf){
@@ -100,6 +114,7 @@ void cursor_left(GapBuf* gapbuf){
         if(gapbuf->buff[gapbuf->cursor - 1] == '\n')
             gapbuf->line-=1; //controlla se sei salito di una riga
         gapbuf->buff[--gapbuf->gapend] = gapbuf->buff[--gapbuf->cursor];
+        gapbuf->col_mem = givecolumn(gapbuf);//mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore
         
     }
 
@@ -113,6 +128,7 @@ bool cursor_right(GapBuf* gapbuf){
         if(gapbuf->buff[gapbuf->gapend] == '\n') //controlla se sei sceso nella prossima riga
             gapbuf->line +=1;
         gapbuf->buff[gapbuf->cursor++] = gapbuf->buff[gapbuf->gapend++];
+        gapbuf->col_mem = givecolumn(gapbuf);//mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore
         return true;
     }
     else  
@@ -123,6 +139,7 @@ bool cursor_right(GapBuf* gapbuf){
 void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
     if(gapbuf->cursor > 0){
         gapbuf->cursor--;
+        gapbuf->col_mem-=1;//mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore(verso sinsitra in questo caso)
         if(gapbuf->buff[gapbuf->cursor] == '\n'){
             gapbuf->line -=1;//controlla se sei salito di una riga
             gapbuf->totlines -= 1;
@@ -145,28 +162,19 @@ void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
 }
 
 
-int givecolumn(GapBuf* gapbuf){ //funzione che ti ritorna in quale colonna
-                                 //si trova il cursore(serve a cursup e cursor down)
-    int i = 1;
-    while(gapbuf->cursor - i >= 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
-        i++;
-        return i;
-
-
-}
-
 void cursor_up(GapBuf* gapbuf){
-    int col = givecolumn(gapbuf);
+    int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
     int line = gapbuf->line; 
     if(gapbuf->line > 1){
         while((givecolumn(gapbuf) > col   || gapbuf->line != line - 1))
             cursor_left(gapbuf);
             
     }
+    gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
 }
 
 void cursor_down(GapBuf* gapbuf){
-    int col = givecolumn(gapbuf);
+    int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
     int col_now;
     int line = gapbuf->line; 
     if(gapbuf->line < gapbuf->totlines){
@@ -176,8 +184,8 @@ void cursor_down(GapBuf* gapbuf){
             if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->gapend] == '\n')
                 break;
         }
-          //TODO SISTEMARE QUESTO WHILE PERCHE' ENTRA IN LOOP INFINITO  
     }
+    gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
 }
 
 
