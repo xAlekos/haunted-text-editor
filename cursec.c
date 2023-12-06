@@ -42,13 +42,50 @@ int main()
     while(ch != ctrl('x')){
         ch = getch();
         switch(ch){
-            case KEY_BACKSPACE : memorizeinput(2,nuovobuf->buff[nuovobuf->cursor - 1],nuovobuf); backspace(nuovobuf); printgapbuftocurses(nuovobuf); break;
-            case KEY_DC : memorizeinput(3,nuovobuf->buff[nuovobuf->gapend],nuovobuf);del(nuovobuf); printgapbuftocurses(nuovobuf); break;
-            case KEY_LEFT :  memorizeinput(5,0,nuovobuf); cursor_left(nuovobuf); printgapbuftocurses(nuovobuf); break;
-            case KEY_RIGHT : memorizeinput(4,0,nuovobuf);if(cursor_right(nuovobuf)); printgapbuftocurses(nuovobuf); break;
-            case KEY_UP : cursor_up(nuovobuf); printgapbuftocurses(nuovobuf); break; 
-            case KEY_DOWN : cursor_down(nuovobuf); printgapbuftocurses(nuovobuf); break; 
-            default : memorizeinput(1,ch,nuovobuf); insert(nuovobuf, ch); printgapbuftocurses(nuovobuf); break;
+            case KEY_BACKSPACE : 
+                                memorizeinput(KEY_BACKSPACE,nuovobuf->buff[nuovobuf->cursor - 1],1,nuovobuf);
+                                backspace(nuovobuf);
+                                printgapbuftocurses(nuovobuf);
+                                break;
+            case KEY_DC : 
+                            memorizeinput(KEY_DC,nuovobuf->buff[nuovobuf->gapend],1,nuovobuf);
+                            del(nuovobuf);
+                            printgapbuftocurses(nuovobuf);
+                            break;
+            case KEY_LEFT :  
+                            memorizeinput(KEY_LEFT,0,0,nuovobuf);
+                            cursor_left(nuovobuf);
+                            printgapbuftocurses(nuovobuf);
+                            break;
+            case KEY_RIGHT : 
+                            memorizeinput(KEY_RIGHT,0,0,nuovobuf);
+                            if(cursor_right(nuovobuf));
+                            printgapbuftocurses(nuovobuf);
+                            break;
+            case KEY_UP : 
+                            cursor_up(nuovobuf);
+                            printgapbuftocurses(nuovobuf);
+                            break; 
+            case KEY_DOWN : 
+                            cursor_down(nuovobuf);
+                            printgapbuftocurses(nuovobuf);
+                            break;
+            case ctrl('z'):
+                            undo(nuovobuf);
+                            printgapbuftocurses(nuovobuf);
+                            break;
+            default :  
+                        if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3
+                            memorizeinput(1,ch,0,nuovobuf);
+                        else{
+                            if(ch == 32)
+                               memorizeinput(3,ch,0,nuovobuf);
+                            else
+                               memorizeinput(2,ch,0,nuovobuf);
+                        }
+                        insert(nuovobuf, ch);
+                        printgapbuftocurses(nuovobuf);
+                        break;
         }
         
     }
