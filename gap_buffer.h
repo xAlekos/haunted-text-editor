@@ -8,8 +8,16 @@
 #define MAX_BUF_SIZE 65535
 #define CURSPOS (gapbuf->cursor) 
 
+
+
+typedef struct history_data{
+    int operation;
+    int ch; //il carattere sul quale è stata effettuata l'operazione
+} HistoryData;
+
+
 typedef struct gap_buf{
-    int history[150];
+    HistoryData history[150];
     int historypointer; 
     int totlines;
     int line;
@@ -19,6 +27,7 @@ typedef struct gap_buf{
     int cursor; //first gapspace
     int gapend; //primo carattere dopo il gap
 } GapBuf;
+
 
 #define gap_back(buf) ((buf)->buff_size - (buf)->gapend) //dim testo dopo il gap
 #define gap_front(buf) ((buf)->cursor) //dim testo prima del gap 
@@ -191,32 +200,52 @@ void cursor_down(GapBuf* gapbuf){
     gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
 }
 
-void memorizeinput(int input, GapBuf* gapbuf){
-switch(input){
+void memorizeinput(int op, int val,  GapBuf* gapbuf){
+
+/*
+-1 : br
+1 = insert qualsiasi cosa
+2 = backspace
+3 = canc
+4 = cursr
+5 = cursl
+6 = insert \n
+7 = insert spazio
+
+*/
+switch(op){
     default: break;
-    case 1: printf("ho fatto un ins\n");
-            if(gapbuf->historypointer > 0 && gapbuf->history[gapbuf->historypointer - 1] == 1){
-                gapbuf->history[gapbuf->historypointer++] = 1; 
+    case 1: 
+            if(gapbuf->historypointer > 0 && (gapbuf->history[gapbuf->historypointer - 1]).operation == 1){
+                (gapbuf->history[gapbuf->historypointer]).ch = val;
+                (gapbuf->history[gapbuf->historypointer++]).operation = 1; 
                 break;
             }
             else{
-                gapbuf->history[gapbuf->historypointer++] = -1;
-                gapbuf->history[gapbuf->historypointer++] = 1;
+                (gapbuf->history[gapbuf->historypointer++]).operation = -1;
+                (gapbuf->history[gapbuf->historypointer]).ch = val;
+                (gapbuf->history[gapbuf->historypointer++]).operation = 1;
             }
                 break;
-    case 2: printf("ho fatto un backspace\n");gapbuf->history[gapbuf->historypointer++] = -1; gapbuf->history[gapbuf->historypointer++] = 2; break;
-    case 3: printf("ho fatto un canc\n");gapbuf->history[gapbuf->historypointer++] = -1; gapbuf->history[gapbuf->historypointer++] = 3; break;
-    case 4: printf("ho fatto un cursr\n");gapbuf->history[gapbuf->historypointer++] = 4; break;
-    case 5: printf("ho fatto un cursl\n");gapbuf->history[gapbuf->historypointer++] = 5; break;
-    case 6: printf("ho inserito una lain\n");gapbuf->history[gapbuf->historypointer++] = -1; gapbuf->history[gapbuf->historypointer++] = 6; break;
-    case 7: printf("ho inserito uno spazio\n");
-            if(gapbuf->historypointer > 0 && gapbuf->history[gapbuf->historypointer - 1] == 7){
-                gapbuf->history[gapbuf->historypointer++] = 7; 
+    case 2: (gapbuf->history[gapbuf->historypointer++]).operation = -1; 
+            (gapbuf->history[gapbuf->historypointer]).ch = val;
+            (gapbuf->history[gapbuf->historypointer++]).operation = 2; 
+            break;
+    case 3: (gapbuf->history[gapbuf->historypointer++]).operation = -1;
+            (gapbuf->history[gapbuf->historypointer]).ch = val;
+            (gapbuf->history[gapbuf->historypointer++]).operation = 3;
+            break;
+    case 4: (gapbuf->history[gapbuf->historypointer++]).operation = 4; break;
+    case 5: (gapbuf->history[gapbuf->historypointer++]).operation = 5; break;
+    case 6: (gapbuf->history[gapbuf->historypointer++]).operation = -1; (gapbuf->history[gapbuf->historypointer++]).operation = 6; break;
+    case 7: 
+            if(gapbuf->historypointer > 0 && (gapbuf->history[gapbuf->historypointer - 1]).operation == 7){
+                (gapbuf->history[gapbuf->historypointer++]).operation = 7; 
                 break;
             }
             else{
-                gapbuf->history[gapbuf->historypointer++] = -1;
-                gapbuf->history[gapbuf->historypointer++] = 7;
+                (gapbuf->history[gapbuf->historypointer++]).operation = -1;
+                (gapbuf->history[gapbuf->historypointer++]).operation = 7;
             }
                 break;
 }

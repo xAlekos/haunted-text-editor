@@ -42,13 +42,13 @@ int main()
     while(ch != ctrl('x')){
         ch = getch();
         switch(ch){
-            case KEY_BACKSPACE : backspace(nuovobuf); printgapbuftocurses(nuovobuf); break;
-            case KEY_DC : del(nuovobuf); printgapbuftocurses(nuovobuf); break;
-            case KEY_LEFT : cursor_left(nuovobuf); printgapbuftocurses(nuovobuf); break;
-            case KEY_RIGHT : if(cursor_right(nuovobuf)); printgapbuftocurses(nuovobuf); break;
+            case KEY_BACKSPACE : memorizeinput(2,nuovobuf->buff[nuovobuf->cursor - 1],nuovobuf); backspace(nuovobuf); printgapbuftocurses(nuovobuf); break;
+            case KEY_DC : memorizeinput(3,nuovobuf->buff[nuovobuf->gapend],nuovobuf);del(nuovobuf); printgapbuftocurses(nuovobuf); break;
+            case KEY_LEFT :  memorizeinput(5,0,nuovobuf); cursor_left(nuovobuf); printgapbuftocurses(nuovobuf); break;
+            case KEY_RIGHT : memorizeinput(4,0,nuovobuf);if(cursor_right(nuovobuf)); printgapbuftocurses(nuovobuf); break;
             case KEY_UP : cursor_up(nuovobuf); printgapbuftocurses(nuovobuf); break; 
             case KEY_DOWN : cursor_down(nuovobuf); printgapbuftocurses(nuovobuf); break; 
-            default : insert(nuovobuf, ch); printgapbuftocurses(nuovobuf); break;
+            default : memorizeinput(1,ch,nuovobuf); insert(nuovobuf, ch); printgapbuftocurses(nuovobuf); break;
         }
         
     }
