@@ -63,15 +63,21 @@ int main()
                             printgapbuftocurses(nuovobuf);
                             break;
             case KEY_UP : 
+                            memorizeinput(KEY_UP,ch,0,nuovobuf);
                             cursor_up(nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break; 
             case KEY_DOWN : 
+                            memorizeinput(KEY_DOWN,ch,0,nuovobuf);
                             cursor_down(nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
             case ctrl('z'):
                             undo(nuovobuf);
+                            printgapbuftocurses(nuovobuf);
+                            break;
+            case ctrl('y'):
+                            redo(nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
             default :  

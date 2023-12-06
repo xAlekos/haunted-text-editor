@@ -6,7 +6,7 @@
 
 #define MIN_BUF_SIZE 2
 #define MAX_BUF_SIZE 65535
-#define HISTORY_MAX 1024
+#define HISTORY_MAX 450
 #define CURSPOS (gapbuf->cursor) 
 
 
@@ -20,6 +20,7 @@ typedef struct history_data{
 typedef struct gap_buf{
     HistoryData history[HISTORY_MAX];
     int historypointer; 
+    int historypointermax;
     int totlines;
     int line;
     int col_mem; //ultima colonna nella quale ci si è spostati.
@@ -51,6 +52,7 @@ GapBuf* newbuffer(int initsize){
     newgap_buf->col_mem = 1;
     newgap_buf->gapend = initsize;
     newgap_buf->historypointer = 0;
+    newgap_buf->historypointermax = 0;
     return newgap_buf;
 }
 
@@ -254,9 +256,10 @@ void memorizeinput(int op, int val, int setbr,  GapBuf* gapbuf){
                 gapbuf->historypointer++;
                 break;
     }
+    gapbuf->historypointermax=gapbuf->historypointer;
 }
 
-void undo(GapBuf* gapbuf){
+void undo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e ne fa l'inverso.
     while(gapbuf->historypointer > 0 && gapbuf->history[gapbuf->historypointer - 1].operation != -1){
         switch(gapbuf->history[gapbuf->historypointer - 1].operation){
             default: 
@@ -265,24 +268,64 @@ void undo(GapBuf* gapbuf){
             case 263: //backspace
                     insert(gapbuf,gapbuf->history[gapbuf->historypointer - 1].ch);
                     break;
-            case 339: //canc
+            case 330: //canc
                     insert(gapbuf,gapbuf->history[gapbuf->historypointer - 1].ch);
                     cursor_left(gapbuf);
                     break;
-            case 260:
+            case 260: //left
                     cursor_right(gapbuf);
                     break;
-            case 261:
+            case 261: //right
                     cursor_left(gapbuf);
                     break;
-            case 259 : break;
-            case 258 : break;
+            case 258 : //down
+                    cursor_up(gapbuf);
+                    break;
+            case 259 : //up
+                    cursor_down(gapbuf);
+                    break;
         }
         gapbuf->historypointer--;
     }
     if(gapbuf->historypointer>0)
         gapbuf->historypointer--;
 }
+
+void redo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e ne fa l'inverso.
+    gapbuf->historypointer++;
+    while(gapbuf->historypointer < gapbuf->historypointermax && gapbuf->history[gapbuf->historypointer].operation != -1){
+        switch(gapbuf->history[gapbuf->historypointer].operation){
+            default: 
+                    insert(gapbuf,gapbuf->history[gapbuf->historypointer].ch);
+                    break;
+            case 263: //backspace
+                    backspace(gapbuf);
+                    break;
+            case 330: //canc
+                    del(gapbuf);
+                    break;
+            case 260: //left
+                    cursor_left(gapbuf);
+                    break;
+            case 261: //right
+                    cursor_right(gapbuf);
+                    break;
+            case 258 : //down
+                    cursor_down(gapbuf);
+                    break;
+            case 259 : //up
+                    cursor_up(gapbuf);
+                    break;
+        }
+        gapbuf->historypointer++;
+    }
+
+}
+
+
+
+
+
 
 
 void printgapbuff(GapBuf* gapbuf){
