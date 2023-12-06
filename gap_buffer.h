@@ -6,13 +6,15 @@
 
 #define MIN_BUF_SIZE 2
 #define MAX_BUF_SIZE 65535
-#define CURSPOS (gapbuf->cursor)
+#define CURSPOS (gapbuf->cursor) 
 
 typedef struct gap_buf{
+    int history[150];
+    int historypointer; 
     int totlines;
     int line;
-    int col_mem;
-    char* buff;
+    int col_mem; //ultima colonna nella quale ci si è spostati.
+    char* buff; 
     int buff_size;
     int cursor; //first gapspace
     int gapend; //primo carattere dopo il gap
@@ -31,13 +33,14 @@ GapBuf* newbuffer(int initsize){
     char* newbuff = (char*)malloc(initsize);
     if (!newbuff)
         return NULL;
-    newgap_buf->buff = newbuff;
+    newgap_buf->buff = newbuff; //riempo tutti i campi
     newgap_buf->buff_size = initsize;
     newgap_buf->cursor = 0;
     newgap_buf->totlines = 1;
     newgap_buf->line = 1;
     newgap_buf->col_mem = 1;
     newgap_buf->gapend = initsize;
+    newgap_buf->historypointer = 0;
     return newgap_buf;
 }
 
@@ -188,7 +191,39 @@ void cursor_down(GapBuf* gapbuf){
     gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
 }
 
+void memorizeinput(int input, GapBuf* gapbuf){
+switch(input){
+    default: break;
+    case 1: printf("ho fatto un ins\n");
+            if(gapbuf->historypointer > 0 && gapbuf->history[gapbuf->historypointer - 1] == 1){
+                gapbuf->history[gapbuf->historypointer++] = 1; 
+                break;
+            }
+            else{
+                gapbuf->history[gapbuf->historypointer++] = -1;
+                gapbuf->history[gapbuf->historypointer++] = 1;
+            }
+                break;
+    case 2: printf("ho fatto un backspace\n");gapbuf->history[gapbuf->historypointer++] = -1; gapbuf->history[gapbuf->historypointer++] = 2; break;
+    case 3: printf("ho fatto un canc\n");gapbuf->history[gapbuf->historypointer++] = -1; gapbuf->history[gapbuf->historypointer++] = 3; break;
+    case 4: printf("ho fatto un cursr\n");gapbuf->history[gapbuf->historypointer++] = 4; break;
+    case 5: printf("ho fatto un cursl\n");gapbuf->history[gapbuf->historypointer++] = 5; break;
+    case 6: printf("ho inserito una lain\n");gapbuf->history[gapbuf->historypointer++] = -1; gapbuf->history[gapbuf->historypointer++] = 6; break;
+    case 7: printf("ho inserito uno spazio\n");
+            if(gapbuf->historypointer > 0 && gapbuf->history[gapbuf->historypointer - 1] == 7){
+                gapbuf->history[gapbuf->historypointer++] = 7; 
+                break;
+            }
+            else{
+                gapbuf->history[gapbuf->historypointer++] = -1;
+                gapbuf->history[gapbuf->historypointer++] = 7;
+            }
+                break;
+}
 
+
+
+}
 
 
 void printgapbuff(GapBuf* gapbuf){

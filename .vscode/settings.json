@@ -6,6 +6,10 @@
         "stdio.h": "c",
         "cursesw.h": "c",
         "form.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "*.tcc": "c",
+        "string_view": "c",
+        "istream": "c",
+        "limits": "c"
     }
 }
