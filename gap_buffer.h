@@ -6,7 +6,7 @@
 
 #define MIN_BUF_SIZE 1024
 #define MAX_BUF_SIZE 65535
-#define HISTORY_MAX 500
+#define HISTORY_MAX 2048
 #define CURSPOS (gapbuf->cursor) 
 
 
@@ -154,7 +154,7 @@ bool cursor_right(GapBuf* gapbuf){
     
 }
 
-void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
+bool backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
     if(gapbuf->cursor > 0){
         gapbuf->cursor--;
         if(gapbuf->col_mem>1)
@@ -163,36 +163,42 @@ void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
             gapbuf->line -=1;//controlla se sei salito di una riga
             gapbuf->totlines -= 1;
         }
-    }
     if (gap_used(gapbuf) < gapbuf->buff_size/4)
         shrink_buffer(gapbuf, gapbuf->buff_size/2);
+    return true;
+    }
+    return false;
 }
 
-void del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
+bool del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
     if(gapbuf->gapend < gapbuf -> buff_size){
         if(gapbuf->buff[gapbuf->gapend] == '\n')//controlla se hai cancellato una line
             gapbuf->totlines-=1;
         gapbuf->gapend++;
-    }
     if (gap_used(gapbuf) < gapbuf->buff_size/4)
         shrink_buffer(gapbuf, gapbuf->buff_size/2);
-
-
+    return true;
+    }
+    return false;
 }
 
 
-void cursor_up(GapBuf* gapbuf){
+bool cursor_up(GapBuf* gapbuf){
     int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
     int line = gapbuf->line; 
     if(gapbuf->line > 1){
         while((givecolumn(gapbuf) > col   || gapbuf->line != line - 1))
             cursor_left(gapbuf);
             
-    }
+    
     gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
+    return true;
+    }
+    else 
+        return false;
 }
 
-void cursor_down(GapBuf* gapbuf){
+bool cursor_down(GapBuf* gapbuf){
     int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
     int col_now;
     int line = gapbuf->line; 
@@ -203,9 +209,13 @@ void cursor_down(GapBuf* gapbuf){
             if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->gapend] == '\n')
                 break;
         }
-    }
+    
     gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
-}
+    return true;
+    }
+    else 
+        return false;
+} 
 
 void memorizeinput(int op, int val, int setbr,  GapBuf* gapbuf){
 //1 = ins char

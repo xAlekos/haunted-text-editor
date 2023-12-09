@@ -43,13 +43,13 @@ int main()
         ch = getch();
         switch(ch){
             case KEY_BACKSPACE : 
-                                memorizeinput(KEY_BACKSPACE,nuovobuf->buff[nuovobuf->cursor - 1],1,nuovobuf);
-                                backspace(nuovobuf);
+                                if(backspace(nuovobuf))
+                                    memorizeinput(KEY_BACKSPACE,nuovobuf->buff[nuovobuf->cursor],1,nuovobuf);
                                 printgapbuftocurses(nuovobuf);
                                 break;
             case KEY_DC : 
-                            memorizeinput(KEY_DC,nuovobuf->buff[nuovobuf->gapend],1,nuovobuf);
-                            del(nuovobuf);
+                            if(del(nuovobuf))
+                                memorizeinput(KEY_DC,nuovobuf->buff[nuovobuf->gapend - 1],1,nuovobuf);        
                             printgapbuftocurses(nuovobuf);
                             break;
             case KEY_LEFT :                             
@@ -63,13 +63,13 @@ int main()
                             printgapbuftocurses(nuovobuf);
                             break;
             case KEY_UP : 
-                            memorizeinput(KEY_UP,ch,0,nuovobuf);
-                            cursor_up(nuovobuf);
+                            if(cursor_up(nuovobuf))
+                                memorizeinput(KEY_UP,ch,0,nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break; 
             case KEY_DOWN : 
-                            memorizeinput(KEY_DOWN,ch,0,nuovobuf);
-                            cursor_down(nuovobuf);
+                            if(cursor_down(nuovobuf))
+                                memorizeinput(KEY_DOWN,ch,0,nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
             case ctrl('z'):
