@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MIN_BUF_SIZE 2
+#define MIN_BUF_SIZE 1024
 #define MAX_BUF_SIZE 65535
-#define HISTORY_MAX 450
+#define HISTORY_MAX 500
 #define CURSPOS (gapbuf->cursor) 
 
 
@@ -124,14 +124,17 @@ int givecolumn(GapBuf* gapbuf){ //funzione che ti ritorna in quale colonna
 
 }
 
-void cursor_left(GapBuf* gapbuf){
+bool cursor_left(GapBuf* gapbuf){
     if (gapbuf->cursor > 0){
         if(gapbuf->buff[gapbuf->cursor - 1] == '\n')
             gapbuf->line-=1; //controlla se sei salito di una riga
         gapbuf->buff[--gapbuf->gapend] = gapbuf->buff[--gapbuf->cursor];
         gapbuf->col_mem = givecolumn(gapbuf);//mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore
-        
+        return true;
     }
+    else 
+        return false;
+    
 
 }
 
@@ -154,7 +157,8 @@ bool cursor_right(GapBuf* gapbuf){
 void backspace(GapBuf* gapbuf){ //elimina l'elemento a sinistra del cursore
     if(gapbuf->cursor > 0){
         gapbuf->cursor--;
-        gapbuf->col_mem-=1;//mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore(verso sinsitra in questo caso)
+        if(gapbuf->col_mem>1)
+            gapbuf->col_mem-=1;//mantiene la memoria dell'ultimo spostamenoto orizzontale del cursore(verso sinsitra in questo caso)
         if(gapbuf->buff[gapbuf->cursor] == '\n'){
             gapbuf->line -=1;//controlla se sei salito di una riga
             gapbuf->totlines -= 1;
@@ -284,6 +288,11 @@ void undo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
             case 259 : //up
                     cursor_down(gapbuf);
                     break;
+            case -2: //growbuffer
+                    break;
+            case -3: //shrinkbuffer
+                    break;
+
         }
         gapbuf->historypointer--;
     }

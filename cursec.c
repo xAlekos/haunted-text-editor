@@ -18,8 +18,8 @@ void printgapbuftocurses(GapBuf* gapbuf){
 	addch('|');
     /*for(int i = gap_front(gapbuf); i<gapbuf->gapend;i++){
         addch('_');
-    }*/
-
+    }
+    */
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
         addch(gapbuf->buff[i]);
     }
@@ -36,7 +36,7 @@ int main()
     noecho();
     curs_set(0);
     keypad(stdscr,true);
-    GapBuf* nuovobuf = newbuffer(2);
+    GapBuf* nuovobuf = newbuffer(1024);
     int ch = 0;
     printgapbuftocurses(nuovobuf);
     while(ch != ctrl('x')){
@@ -52,14 +52,14 @@ int main()
                             del(nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
-            case KEY_LEFT :  
-                            memorizeinput(KEY_LEFT,0,0,nuovobuf);
-                            cursor_left(nuovobuf);
+            case KEY_LEFT :                             
+                            if(cursor_left(nuovobuf))
+                                memorizeinput(KEY_LEFT,0,0,nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
-            case KEY_RIGHT : 
-                            memorizeinput(KEY_RIGHT,0,0,nuovobuf);
-                            if(cursor_right(nuovobuf));
+            case KEY_RIGHT :                            
+                            if(cursor_right(nuovobuf))
+                                memorizeinput(KEY_RIGHT,0,0,nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
             case KEY_UP : 
