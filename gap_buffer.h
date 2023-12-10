@@ -183,38 +183,43 @@ bool del(GapBuf* gapbuf){ //elimina l'elemento a destra del cursore
 }
 
 
-bool cursor_up(GapBuf* gapbuf){
+int cursor_up(GapBuf* gapbuf){
     int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
     int line = gapbuf->line; 
+    int count = 0;
     if(gapbuf->line > 1){
-        while((givecolumn(gapbuf) > col   || gapbuf->line != line - 1))
+        while((givecolumn(gapbuf) > col   || gapbuf->line != line - 1)){
             cursor_left(gapbuf);
+            count++;
+        }
             
     
     gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
-    return true;
+    return count;
     }
     else 
-        return false;
+        return 0;
 }
 
-bool cursor_down(GapBuf* gapbuf){
+int cursor_down(GapBuf* gapbuf){
     int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
     int col_now;
     int line = gapbuf->line; 
+    int count = 0;
     if(gapbuf->line < gapbuf->totlines){
         while((col_now = givecolumn(gapbuf)) < col   || gapbuf->line < line + 1){
             if(!cursor_right(gapbuf))
                 break;
+            count++;
             if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->gapend] == '\n')
                 break;
         }
     
     gapbuf->col_mem=col; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
-    return true;
+    return count;
     }
     else 
-        return false;
+        return 0;
 } 
 
 void memorizeinput(int op, int val, int setbr,  GapBuf* gapbuf){
@@ -293,10 +298,12 @@ void undo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
                     cursor_left(gapbuf);
                     break;
             case 258 : //down
-                    cursor_up(gapbuf);
+                    for(int i = 0;i<gapbuf->history[gapbuf->historypointer - 1].ch;i++)
+                        cursor_left(gapbuf);
                     break;
             case 259 : //up
-                    cursor_down(gapbuf);
+                    for(int i = 0;i<gapbuf->history[gapbuf->historypointer - 1].ch;i++)
+                        cursor_right(gapbuf);
                     break;
             case -2: //growbuffer
                     break;
@@ -330,10 +337,12 @@ void redo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
                     cursor_right(gapbuf);
                     break;
             case 258 : //down
-                    cursor_down(gapbuf);
+                    for(int i = 0;i<gapbuf->history[gapbuf->historypointer - 1].ch;i++)
+                        cursor_right(gapbuf);
                     break;
             case 259 : //up
-                    cursor_up(gapbuf);
+                    for(int i = 0;i<gapbuf->history[gapbuf->historypointer - 1].ch;i++)
+                        cursor_left(gapbuf);
                     break;
         }
         gapbuf->historypointer++;

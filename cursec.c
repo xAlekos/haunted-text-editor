@@ -38,8 +38,11 @@ int main()
     keypad(stdscr,true);
     GapBuf* nuovobuf = newbuffer(1024);
     int ch = 0;
+
     printgapbuftocurses(nuovobuf);
     while(ch != ctrl('x')){
+        int cleft; //usate per contare quante volte facendo up si è andati a sinistra ed a destra,
+        int cright; //per assicuarsi che in fase di undo non si sminchia 
         ch = getch();
         switch(ch){
             case KEY_BACKSPACE : 
@@ -63,13 +66,13 @@ int main()
                             printgapbuftocurses(nuovobuf);
                             break;
             case KEY_UP : 
-                            if(cursor_up(nuovobuf))
-                                memorizeinput(KEY_UP,ch,0,nuovobuf);
+                            if(cleft = cursor_up(nuovobuf))
+                                memorizeinput(KEY_UP,cleft,0,nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break; 
             case KEY_DOWN : 
-                            if(cursor_down(nuovobuf))
-                                memorizeinput(KEY_DOWN,ch,0,nuovobuf);
+                            if(cright = cursor_down(nuovobuf))
+                                memorizeinput(KEY_DOWN,cright,0,nuovobuf);
                             printgapbuftocurses(nuovobuf);
                             break;
             case ctrl('z'):
