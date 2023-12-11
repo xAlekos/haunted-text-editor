@@ -313,7 +313,7 @@ void undo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
 }
 
 void redo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e ne fa l'inverso.
-    if(gapbuf->history < gapbuf->historypointermax)
+    if(gapbuf->historypointer < gapbuf->historypointermax)
     gapbuf->historypointer++;
     while(gapbuf->historypointer < gapbuf->historypointermax && gapbuf->history[gapbuf->historypointer].operation != -1){
         switch(gapbuf->history[gapbuf->historypointer].operation){
