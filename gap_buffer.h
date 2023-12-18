@@ -221,6 +221,9 @@ void memorizeinput(int op, int val, int setbr,  GapBuf* gapbuf){
 //1 = ins char
 // 2 = ins spazio
 // 3 = ins newline
+//per memorizzare l'input corretamente val ha bisogno di colmem nel caso di cursor up / down,
+//del carattere inserito in caso di ins,cancellato nel caso di backspace , del.
+
 
     gapbuf->historypointer %= HISTORY_MAX;
 

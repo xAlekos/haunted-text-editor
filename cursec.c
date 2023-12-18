@@ -6,6 +6,9 @@
 
 
 typedef struct printinfo{
+    int min_x;
+    int max_x;
+    int standard_max_x;
     int min_y;
     int max_y;
     int standard_max_y;
@@ -14,9 +17,13 @@ typedef struct printinfo{
 PrintInfo* newprintinfo(){
     PrintInfo* info = malloc(sizeof(PrintInfo));
     int y = getmaxy(stdscr);
-    info->standard_max_y= y - 2 ;
-    info->min_y=0;
-    info->max_y=y - 2;
+    info->standard_max_x = 5 ;
+    info->max_x = 5;
+    info->min_x = 5;
+
+    info->standard_max_y = y - 2;
+    info->min_y = 0;
+    info->max_y = y - 2;
     return info;
 }
 
@@ -26,33 +33,37 @@ int x;
 int y;
 getyx(stdscr, y, x);
 row = getmaxy(stdscr);
-mvprintw(row - 1 , 0,"Ln: %d Col; %d",gapbuf->line,givecolumn(gapbuf));
+mvprintw(row - 1 , 0,"Ln: %d Col: %d",gapbuf->line,givecolumn(gapbuf));
 move(y,x);
 refresh();
 }
 
 
-void printgapbuftocursesfromto(GapBuf* gapbuf,int lns,int lnend){
 
-    int char_line = 1;
+void printgapbuftocursesfromto(GapBuf* gapbuf,int lns,int lnend,int cs, int ce){
+
+    int char_line = 1; //in che riga si trova il char che verrà stampato
+    int char_col = 1; //in che colonna si trova il char che verrà stampato
     erase();  
     for(int i = 0; i<gap_front(gapbuf);i++){
-            if(char_line  >= lns && char_line  <= lnend)
+            if(char_line  >= lns && char_line  <= lnend){ //stampa solo le righe nel range contenibile nello schermo.
                 addch(gapbuf->buff[i]);     
-            if(gapbuf->buff[i] == '\n' )
+            }
+            if(gapbuf->buff[i] == '\n' ){
                 char_line += 1;
+                char_col = 0;
+            }
             
     }  
 	addch('|');
-    /*for(int i = gap_front(gapbuf); i<gapbuf->gapend;i++){
-        addch('_');
-    }
-    */
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
-         if(char_line  >= lns && char_line  <= lnend)
+        if(char_line  >= lns && char_line  <= lnend){ //stampa solo le righe nel range contenibile nello schermo.
                 addch(gapbuf->buff[i]);     
-            if(gapbuf->buff[i] == '\n' )
+            }
+            if(gapbuf->buff[i] == '\n' ){
                 char_line += 1;
+                char_col = 0;
+            }
     }
     refresh();
 }
@@ -61,20 +72,32 @@ void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
     //facciamo finta che lo schermo sia largo 5
 
     if(gapbuf->line > info->max_y){ //quando il cursore va sotto il limite dello schermo,
-        info->min_y+=info->standard_max_y; //si stampa di nuovo da sopra.
-        info->max_y+=info->standard_max_y;
+        info->min_y+=info->standard_max_y / 2; //si stampa di nuovo da sopra.
+        info->max_y+=info->standard_max_y / 2;
     }
     if(gapbuf->line < info->min_y){
-        info->min_y-=info->standard_max_y;
-        info->max_y-=info->standard_max_y;
+        info->min_y-=info->standard_max_y / 2;
+        info->max_y-=info->standard_max_y / 2;
     }
-    printgapbuftocursesfromto(gapbuf, info->min_y, info->max_y);
+
+    if(givecolumn(gapbuf) > info->max_x){
+         info->min_x+=info->standard_max_x; //si stampa di nuovo da sopra.
+         info->max_x+=info->standard_max_x;
+    }
+    if(givecolumn(gapbuf) < info->min_x){
+         info->min_x-=info->standard_max_x; //si stampa di nuovo da sopra.
+         info->max_x-=info->standard_max_x;
+    }
+
+
+
+    printgapbuftocursesfromto(gapbuf, info->min_y, info->max_y,info->min_x,info->max_x);
     printcursorinfo(gapbuf);
 }
 
 int main()
 {	
-    setlocale(LC_ALL, "it_IT.UTF-8");
+    setlocale(LC_ALL, "");
 	initscr();			/* Start curses mode 		  */
 	raw();
     noecho();
