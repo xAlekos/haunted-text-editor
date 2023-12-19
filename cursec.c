@@ -83,7 +83,7 @@ void updatelinecol(int ch,int* line, int* col, int* exceedingline){
 }
 
 void addlnifneeded(int col , PrintInfo* info, int* exceeding_line, int old){
-    //visto  ciò che non entra nello schermo non viene stampato,
+    //visto CHE ciò che non entra nello schermo non viene stampato,
     //questa funzione si assicura di far andare a capo anche se il \n presente nel buffer non viene stampato.
     //old indica se vuoi che il \n venga messo dopo che ogni carattere abbia raggiunto il limite standard o se 
     //invece prevedi che si scorrera orizzontalmente nel testo old utilizzerà il valore aggiornato del massimo.
@@ -102,41 +102,27 @@ void addlnifneeded(int col , PrintInfo* info, int* exceeding_line, int old){
 }
 
 void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
-
+    int old;
     int char_line = 1; //in che riga si trova il char che verrà stampato
     int char_col = 1; //in che colonna si trova il char che verrà stampato
     int exceeding_line = 1; 
     erase();  
     for(int i = 0; i<gap_front(gapbuf);i++){
         if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
-            if(gapbuf->line == char_line){
-                if(!ischaroutofbound(char_col,info,0))
+            old = gapbuf->line == char_line ? 0 : 1;
+                if(!ischaroutofbound(char_col,info,old))
                     addch(gapbuf->buff[i]);
-                addlnifneeded(char_col,info,&exceeding_line,0);
-            }
-            else{
-                if(!ischaroutofbound(char_col,info,1))
-                    addch(gapbuf->buff[i]);
-                addlnifneeded(char_col,info,&exceeding_line,1);
-            }
-
+                addlnifneeded(char_col,info,&exceeding_line,old);
         }
         updatelinecol(gapbuf->buff[i], &char_line, &char_col,&exceeding_line);
     }  
 	addch('|');
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
        if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
-            if(gapbuf->line == char_line){
-                if(!ischaroutofbound(char_col,info,0))
+            old = gapbuf->line == char_line ? 0 : 1;
+                if(!ischaroutofbound(char_col,info,old))
                     addch(gapbuf->buff[i]);
-                addlnifneeded(char_col,info,&exceeding_line,0);
-            }
-            else{
-                if(!ischaroutofbound(char_col,info,1))
-                    addch(gapbuf->buff[i]);
-                addlnifneeded(char_col,info,&exceeding_line,1);
-            }
-
+                addlnifneeded(char_col,info,&exceeding_line,old);
         }
         updatelinecol(gapbuf->buff[i], &char_line, &char_col,&exceeding_line);
     }
