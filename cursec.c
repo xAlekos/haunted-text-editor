@@ -17,13 +17,14 @@ typedef struct printinfo{
 PrintInfo* newprintinfo(){
     PrintInfo* info = malloc(sizeof(PrintInfo));
     int y = getmaxy(stdscr);
-    info->standard_max_x = 5 ;
-    info->max_x = 5;
-    info->min_x = 5;
+    int x = getmaxx(stdscr);
+    info->standard_max_x = x - 3;
+    info->max_x = info->standard_max_x;
+    info->min_x = 0;
 
     info->standard_max_y = y - 2;
     info->min_y = 0;
-    info->max_y = y - 2;
+    info->max_y = info->standard_max_y;
     return info;
 }
 
@@ -39,31 +40,105 @@ refresh();
 }
 
 
+bool iscursoroutofbound(GapBuf* gapbuf, PrintInfo* info){
+    if(givecolumn(gapbuf) > info->standard_max_x)
+        return true;
+    else
+        return false;
+}
 
-void printgapbuftocursesfromto(GapBuf* gapbuf,int lns,int lnend,int cs, int ce){
+bool ischaroutofbound(int col, PrintInfo* info,int old){
+      int min,max;
+    if(old == 1){
+        max = info->standard_max_x;
+        min = 0;
+    }
+    else{
+        max = info->max_x;
+        min = info->min_x;
+    }   
+    if(col > max || col < min)
+        return true;
+    else
+        return false;
+}
+
+bool islineoutofbound(int line, PrintInfo* info){
+     if(line > info->max_y || line < info->min_y)
+        return true;
+    else
+        return false;
+    
+}
+
+void updatelinecol(int ch,int* line, int* col, int* exceedingline){
+    if(ch == '\n' ){
+            *line += 1;
+            *exceedingline = 1;
+            *col = 1;
+            }
+    else
+        *col+=1;
+
+}
+
+void addlnifneeded(int col , PrintInfo* info, int* exceeding_line, int old){
+    //visto  ciò che non entra nello schermo non viene stampato,
+    //questa funzione si assicura di far andare a capo anche se il \n presente nel buffer non viene stampato.
+    //old indica se vuoi che il \n venga messo dopo che ogni carattere abbia raggiunto il limite standard o se 
+    //invece prevedi che si scorrera orizzontalmente nel testo old utilizzerà il valore aggiornato del massimo.
+    //PS: se non è chiaro lo so. è colpa mia. è stato un parto far funzionare questa cosa :(
+    int max;
+    if(old == 1)
+        max = info->standard_max_x;
+    else
+        max = info->max_x;
+    
+    if(col > max && *exceeding_line == 1){
+                    addch('#');
+                    addch('\n');
+                    *exceeding_line = 0;
+                }
+}
+
+void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
 
     int char_line = 1; //in che riga si trova il char che verrà stampato
     int char_col = 1; //in che colonna si trova il char che verrà stampato
+    int exceeding_line = 1; 
     erase();  
     for(int i = 0; i<gap_front(gapbuf);i++){
-            if(char_line  >= lns && char_line  <= lnend){ //stampa solo le righe nel range contenibile nello schermo.
-                addch(gapbuf->buff[i]);     
+        if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
+            if(gapbuf->line == char_line){
+                if(!ischaroutofbound(char_col,info,0))
+                    addch(gapbuf->buff[i]);
+                addlnifneeded(char_col,info,&exceeding_line,0);
             }
-            if(gapbuf->buff[i] == '\n' ){
-                char_line += 1;
-                char_col = 0;
+            else{
+                if(!ischaroutofbound(char_col,info,1))
+                    addch(gapbuf->buff[i]);
+                addlnifneeded(char_col,info,&exceeding_line,1);
             }
-            
+
+        }
+        updatelinecol(gapbuf->buff[i], &char_line, &char_col,&exceeding_line);
     }  
 	addch('|');
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
-        if(char_line  >= lns && char_line  <= lnend){ //stampa solo le righe nel range contenibile nello schermo.
-                addch(gapbuf->buff[i]);     
+       if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
+            if(gapbuf->line == char_line){
+                if(!ischaroutofbound(char_col,info,0))
+                    addch(gapbuf->buff[i]);
+                addlnifneeded(char_col,info,&exceeding_line,0);
             }
-            if(gapbuf->buff[i] == '\n' ){
-                char_line += 1;
-                char_col = 0;
+            else{
+                if(!ischaroutofbound(char_col,info,1))
+                    addch(gapbuf->buff[i]);
+                addlnifneeded(char_col,info,&exceeding_line,1);
             }
+
+        }
+        updatelinecol(gapbuf->buff[i], &char_line, &char_col,&exceeding_line);
     }
     refresh();
 }
@@ -91,7 +166,7 @@ void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
 
 
 
-    printgapbuftocursesfromto(gapbuf, info->min_y, info->max_y,info->min_x,info->max_x);
+    printgapbuftocursesfromto(gapbuf,info);
     printcursorinfo(gapbuf);
 }
 
@@ -159,6 +234,8 @@ int main()
                         }
                         insert(nuovobuf, ch);
                         printgapbuftocurses(nuovobuf,info);
+                        if(ch == 32 && iscursoroutofbound(nuovobuf,info))
+                            addch('\n');
                         break;
         }
         
