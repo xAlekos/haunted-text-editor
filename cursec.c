@@ -34,18 +34,23 @@ int x;
 int y;
 getyx(stdscr, y, x);
 row = getmaxy(stdscr);
-mvprintw(row - 1 , 0,"Ln: %d Col: %d",gapbuf->line,givecolumn(gapbuf));
+attron(A_STANDOUT);
+mvprintw(row - 1 , 0,"Ln: %d Col: %d-%d",gapbuf->line,givecolumn(gapbuf),gapbuf->col_mem);
+attroff(A_STANDOUT);
 move(y,x);
 refresh();
 }
 
-
-bool iscursoroutofbound(GapBuf* gapbuf, PrintInfo* info){
-    if(givecolumn(gapbuf) > info->standard_max_x)
-        return true;
-    else
-        return false;
+void printtopbar(){
+    int x=getmaxx(stdscr);
+    attron(A_STANDOUT);
+    for (int i = 0;i<x;i++){
+        addch(' ');
+    }
+    attroff(A_STANDOUT);
+    refresh();
 }
+
 
 bool ischaroutofbound(int col, PrintInfo* info,int old){
       int min,max;
@@ -107,10 +112,11 @@ void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
     int char_col = 1; //in che colonna si trova il char che verrà stampato
     int exceeding_line = 1; 
     erase();  
+    printtopbar();
     for(int i = 0; i<gap_front(gapbuf);i++){
         if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
             old = gapbuf->line == char_line ? 0 : 1;
-                if(!ischaroutofbound(char_col,info,old))
+                if(!ischaroutofbound(char_col,info,old)) //stampa solo le colonne nel range dello schermo
                     addch(gapbuf->buff[i]);
                 addlnifneeded(char_col,info,&exceeding_line,old);
         }
@@ -149,7 +155,6 @@ void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
          info->min_x-=info->standard_max_x; //si stampa di nuovo da sopra.
          info->max_x-=info->standard_max_x;
     }
-
 
 
     printgapbuftocursesfromto(gapbuf,info);
@@ -220,8 +225,6 @@ int main()
                         }
                         insert(nuovobuf, ch);
                         printgapbuftocurses(nuovobuf,info);
-                        if(ch == 32 && iscursoroutofbound(nuovobuf,info))
-                            addch('\n');
                         break;
         }
         
