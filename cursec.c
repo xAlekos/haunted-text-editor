@@ -41,11 +41,17 @@ move(y,x);
 refresh();
 }
 
-void printtopbar(){
-    int x=getmaxx(stdscr);
+void printtopbar(GapBuf* gapbuf){
+    unsigned int  x=getmaxx(stdscr);
     attron(A_STANDOUT);
+    unsigned int namelen = strlen(gapbuf->filename);
+    int j=0;
     for (int i = 0;i<x;i++){
-        addch(' ');
+
+        if(i >= (x/2) - namelen/2 && i < (x/2) + namelen/2)
+            addch(gapbuf->filename[j++]);
+        else
+            addch(' ');
     }
     attroff(A_STANDOUT);
     refresh();
@@ -166,14 +172,14 @@ void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
 
 void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
     erase(); 
-    printtopbar();
+    printtopbar(gapbuf);
     checkxbounds(gapbuf,info);
     checkybounds(gapbuf,info);
     printgapbuftocursesfromto(gapbuf,info);
     printcursorinfo(gapbuf);
 }
 
-int main()
+int main(int argc, char* argv[])
 {	
     setlocale(LC_ALL, "");
 	initscr();			/* Start curses mode 		  */
@@ -184,6 +190,15 @@ int main()
     GapBuf* nuovobuf = newbuffer(1024);
     PrintInfo* info = newprintinfo();
     int ch = 0;
+    if(argc > 1){
+       if(strlen(argv[1]) >= 256){
+            printf("File name exceeding limit");
+            return 0;
+       }
+       load(argv[1],nuovobuf);
+       strcpy(nuovobuf->filename , argv[1]);
+    }
+
     printgapbuftocurses(nuovobuf,info);
     while(ch != ctrl('x')){
         ch = getch();

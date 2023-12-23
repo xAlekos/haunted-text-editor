@@ -6,6 +6,7 @@
 
 #define MIN_BUF_SIZE 1024
 #define MAX_BUF_SIZE 65535
+#define MAX_FILE_NAME 256
 #define HISTORY_MAX 2048
 #define CURSPOS (gapbuf->cursor) 
 
@@ -28,27 +29,13 @@ typedef struct gap_buf{
     int buff_size;
     int cursor; //first gapspace
     int gapend; //primo carattere dopo il gap
+    char* filename;
 } GapBuf;
 
 
 #define gap_back(buf) ((buf)->buff_size - (buf)->gapend) //dim testo dopo il gap
 #define gap_front(buf) ((buf)->cursor) //dim testo prima del gap 
 #define gap_used(buf)  (gap_back(buf) + gap_front(buf)) //dim totali testo
-
-bool load(char* filename,GapBuf* gapbuf){
-
-FILE *loadfrom;
-loadfrom=fopen(filename, "r");
-char ch;
-int i = 0;
-if(loadfrom == NULL)
-    return false;
-while(ch=getc(loadfrom) != EOF)
-    gapbuf->buff[i++]=ch;
-fclose(loadfrom);
-
-}
-
 
 GapBuf* newbuffer(int initsize){
     initsize = initsize > MIN_BUF_SIZE ? initsize : MIN_BUF_SIZE;
@@ -67,6 +54,7 @@ GapBuf* newbuffer(int initsize){
     newgap_buf->gapend = initsize;
     newgap_buf->historypointer = 0;
     newgap_buf->historypointermax = 0;
+    newgap_buf->filename = malloc(256);
     return newgap_buf;
 }
 
@@ -363,6 +351,19 @@ void redo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
 
 }
 
+bool load(char* filename,GapBuf* gapbuf){
+
+    FILE *loadfrom;
+    loadfrom=fopen(filename, "r");
+    int ch;
+    int i = 0;
+    if(loadfrom == NULL)
+        return false;
+    while((ch= fgetc(loadfrom)) != EOF){
+        insert(gapbuf, (int)ch);
+    }
+    return true;
+}
 
 
 
