@@ -35,6 +35,20 @@ typedef struct gap_buf{
 #define gap_front(buf) ((buf)->cursor) //dim testo prima del gap 
 #define gap_used(buf)  (gap_back(buf) + gap_front(buf)) //dim totali testo
 
+bool load(char* filename,GapBuf* gapbuf){
+
+FILE *loadfrom;
+loadfrom=fopen(filename, "r");
+char ch;
+int i = 0;
+if(loadfrom == NULL)
+    return false;
+while(ch=getc(loadfrom) != EOF)
+    gapbuf->buff[i++]=ch;
+fclose(loadfrom);
+
+}
+
 
 GapBuf* newbuffer(int initsize){
     initsize = initsize > MIN_BUF_SIZE ? initsize : MIN_BUF_SIZE;

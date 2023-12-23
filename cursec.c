@@ -18,11 +18,11 @@ PrintInfo* newprintinfo(){
     PrintInfo* info = malloc(sizeof(PrintInfo));
     int y = getmaxy(stdscr);
     int x = getmaxx(stdscr);
-    info->standard_max_x = x - 3;
+    info->standard_max_x = x - 4;
     info->max_x = info->standard_max_x;
     info->min_x = 0;
 
-    info->standard_max_y = y - 2;
+    info->standard_max_y = y - 3;
     info->min_y = 0;
     info->max_y = info->standard_max_y;
     return info;
@@ -106,14 +106,39 @@ void addlnifneeded(int col , PrintInfo* info, int* exceeding_line, int old){
                 }
 }
 
+void checkybounds(GapBuf* gapbuf, PrintInfo* info){
+    if(gapbuf->line > info->max_y){ //quando il cursore va sotto il limite dello schermo,
+        info->min_y+=info->standard_max_y / 2; //si stampa di nuovo da sopra.
+        info->max_y+=info->standard_max_y / 2;
+    }
+    if(gapbuf->line < info->min_y){
+        info->min_y-=info->standard_max_y / 2;
+        info->max_y-=info->standard_max_y / 2; 
+    }
+}
+
+void checkxbounds(GapBuf* gapbuf, PrintInfo* info){
+    int col = givecolumn(gapbuf);
+    
+    if(col > info->max_x){
+         info->min_x+=info->standard_max_x; //si stampa di nuovo da sopra.
+         info->max_x+=info->standard_max_x;
+    }
+    if(col < info->min_x){
+         info->min_x-=info->standard_max_x; //si stampa di nuovo da sopra.
+         info->max_x-=info->standard_max_x;
+    }
+
+}
+
 void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
     int old;
     int char_line = 1; //in che riga si trova il char che verrà stampato
     int char_col = 1; //in che colonna si trova il char che verrà stampato
-    int exceeding_line = 1; 
-    erase();  
-    printtopbar();
+    int exceeding_line = 1; //flag usata per decidere quando stampare un \n 
     for(int i = 0; i<gap_front(gapbuf);i++){
+        checkxbounds(gapbuf,info);
+        checkybounds(gapbuf,info);
         if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
             old = gapbuf->line == char_line ? 0 : 1;
                 if(!ischaroutofbound(char_col,info,old)) //stampa solo le colonne nel range dello schermo
@@ -124,6 +149,8 @@ void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
     }  
 	addch('|');
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
+       checkxbounds(gapbuf,info);
+       checkybounds(gapbuf,info);
        if(!islineoutofbound(char_line,info)){ //stampa solo le righe nel range contenibile nello schermo.
             old = gapbuf->line == char_line ? 0 : 1;
                 if(!ischaroutofbound(char_col,info,old))
@@ -135,28 +162,13 @@ void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
     refresh();
 }
 
+
+
 void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
-    //facciamo finta che lo schermo sia largo 5
-
-    if(gapbuf->line > info->max_y){ //quando il cursore va sotto il limite dello schermo,
-        info->min_y+=info->standard_max_y / 2; //si stampa di nuovo da sopra.
-        info->max_y+=info->standard_max_y / 2;
-    }
-    if(gapbuf->line < info->min_y){
-        info->min_y-=info->standard_max_y / 2;
-        info->max_y-=info->standard_max_y / 2;
-    }
-
-    if(givecolumn(gapbuf) > info->max_x){
-         info->min_x+=info->standard_max_x; //si stampa di nuovo da sopra.
-         info->max_x+=info->standard_max_x;
-    }
-    if(givecolumn(gapbuf) < info->min_x){
-         info->min_x-=info->standard_max_x; //si stampa di nuovo da sopra.
-         info->max_x-=info->standard_max_x;
-    }
-
-
+    erase(); 
+    printtopbar();
+    checkxbounds(gapbuf,info);
+    checkybounds(gapbuf,info);
     printgapbuftocursesfromto(gapbuf,info);
     printcursorinfo(gapbuf);
 }
