@@ -45,13 +45,21 @@ void printtopbar(GapBuf* gapbuf){
     unsigned int  x=getmaxx(stdscr);
     attron(A_STANDOUT);
     unsigned int namelen = strlen(gapbuf->filename);
+    int odd = namelen % 2 == 0 ? 0 : 1;
     int j=0;
     for (int i = 0;i<x;i++){
-
-        if(i >= (x/2) - namelen/2 && i < (x/2) + namelen/2)
-            addch(gapbuf->filename[j++]);
-        else
-            addch(' ');
+        if(odd == 0){
+            if(i >= (x/2) - namelen/2 && i < (x/2) + namelen/2)
+                addch(gapbuf->filename[j++]);
+            else
+                addch(' ');
+        }
+        else{
+            if(i >= (x/2) - namelen/2 && i <= (x/2) + namelen/2)
+                addch(gapbuf->filename[j++]);
+            else
+                addch(' ');
+        }
     }
     attroff(A_STANDOUT);
     refresh();
@@ -198,6 +206,9 @@ int main(int argc, char* argv[])
        load(argv[1],nuovobuf);
        strcpy(nuovobuf->filename , argv[1]);
     }
+    else{
+        strcpy(nuovobuf->filename ,"New File");
+    }
 
     printgapbuftocurses(nuovobuf,info);
     while(ch != ctrl('x')){
@@ -240,6 +251,9 @@ int main(int argc, char* argv[])
             case ctrl('y'):
                             redo(nuovobuf);
                             printgapbuftocurses(nuovobuf,info);
+                            break;
+            case ctrl('s'):
+                            save(nuovobuf);
                             break;
             default :  
                         if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3

@@ -365,6 +365,18 @@ bool load(char* filename,GapBuf* gapbuf){
     return true;
 }
 
+bool save(GapBuf* gapbuf){
+    FILE* saveto;
+    saveto=fopen(gapbuf->filename, "w+");
+    if(saveto == NULL)
+        return NULL;
+    for(int i = 0; i<gap_front(gapbuf);i++){
+        fputc(gapbuf->buff[i],saveto);
+    }
+    for(int i = gapbuf->gapend; i<gapbuf->buff_size; i++){
+        fputc(gapbuf->buff[i],saveto);
+    }
+}
 
 
 
