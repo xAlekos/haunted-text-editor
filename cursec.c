@@ -176,6 +176,30 @@ void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
     refresh();
 }
 
+void printtextbox(char* input_message){
+    int x,y;
+    int x_max,y_max;
+    getmaxyx(stdscr,y_max,x_max);
+    getyx(stdscr,y,x);
+    int input_message_len = strlen(input_message);
+    move(y_max - 2,x_max/2 - strlen(input_message) / 2);
+    attron(A_STANDOUT);
+    for(int i = 0; i < input_message_len; i++)
+        addch(input_message[i]);
+    attroff(A_STANDOUT);
+    refresh();
+}
+
+char* takeinput(){
+    int x_max,y_max;
+    getmaxyx(stdscr, y_max,x_max);
+    echo();
+    char* input = malloc(257);
+    move(y_max - 1, 17);
+    getnstr(input,256);
+    noecho();
+    return input;
+}
 
 
 void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
@@ -187,6 +211,39 @@ void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
     printcursorinfo(gapbuf);
 }
 
+void asktochangename(GapBuf* gapbuf,PrintInfo* info){
+    char message[500];
+    printgapbuftocurses(gapbuf,info);
+    snprintf(message,500,"File name is : %s. Change File Name ? (y/n)",gapbuf->filename);
+    printtextbox(message);
+    int found = 0;
+    while(found == 0){
+        char* answer = takeinput();
+        if (strcmp(answer,"y") == 0){
+            found = 1;
+            printgapbuftocurses(gapbuf,info);
+            printtextbox(" -- SELECT NEW FILE NAME --");
+            free(answer);
+            answer=takeinput();
+            strcpy(gapbuf->filename,answer);
+            snprintf(message,500,"-- SAVING FILE AS %s -- ",gapbuf->filename);
+            printgapbuftocurses(gapbuf,info);
+            printtextbox(message);
+            free(answer);
+            save(gapbuf);
+
+        }
+        else if(strcmp(answer,"n") == 0){
+            found = 1;
+            snprintf(message,500,"-- FILE SAVED AS %s -- ",gapbuf->filename);
+            printgapbuftocurses(gapbuf,info);
+            printtextbox(message);
+            free(answer);
+            save(gapbuf);
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {	
     setlocale(LC_ALL, "");
@@ -195,7 +252,7 @@ int main(int argc, char* argv[])
     noecho();
     curs_set(0);
     keypad(stdscr,true);
-    GapBuf* nuovobuf = newbuffer(1024);
+    GapBuf* nuovobuf = newbuffer(MAX_BUF_SIZE);
     PrintInfo* info = newprintinfo();
     int ch = 0;
     if(argc > 1){
@@ -253,7 +310,7 @@ int main(int argc, char* argv[])
                             printgapbuftocurses(nuovobuf,info);
                             break;
             case ctrl('s'):
-                            save(nuovobuf);
+                            asktochangename(nuovobuf,info);
                             break;
             default :  
                         if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3

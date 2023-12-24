@@ -24,6 +24,7 @@ typedef struct gap_buf{
     int historypointermax;
     int totlines;
     int line;
+
     int col_mem; //ultima colonna nella quale ci si è spostati.
     char* buff; 
     int buff_size;
