@@ -1,5 +1,4 @@
 #include <ncurses.h>
-#include <stdio.h>
 #include <locale.h>
 #include "gap_buffer.h"
 #define ctrl(x)           ((x) & 0x1f)
@@ -15,7 +14,7 @@ typedef struct printinfo{
 } PrintInfo;
 
 PrintInfo* newprintinfo(){
-    PrintInfo* info = malloc(sizeof(PrintInfo));
+    PrintInfo* info = (PrintInfo*)malloc(sizeof(PrintInfo));
     int y = getmaxy(stdscr);
     int x = getmaxx(stdscr);
     info->standard_max_x = x - 4;
@@ -35,7 +34,7 @@ int y;
 getyx(stdscr, y, x);
 row = getmaxy(stdscr);
 attron(A_STANDOUT);
-mvprintw(row - 1 , 0,"Ln: %d Col: %d-%d",gapbuf->line,givecolumn(gapbuf),gapbuf->col_mem);
+mvprintw(row - 1 , 0,"Ln: %d Col: %d-%d",gapbuf->line,gapbuf->col,gapbuf->col_mem);
 attroff(A_STANDOUT);
 move(y,x);
 refresh();
@@ -194,7 +193,7 @@ char* takeinput(){
     int x_max,y_max;
     getmaxyx(stdscr, y_max,x_max);
     echo();
-    char* input = malloc(257);
+    char* input = (char*)malloc(257);
     move(y_max - 1, 17);
     getnstr(input,256);
     noecho();
@@ -205,8 +204,6 @@ char* takeinput(){
 void printgapbuftocurses(GapBuf* gapbuf,PrintInfo* info){
     erase(); 
     printtopbar(gapbuf);
-    checkxbounds(gapbuf,info);
-    checkybounds(gapbuf,info);
     printgapbuftocursesfromto(gapbuf,info);
     printcursorinfo(gapbuf);
 }
@@ -242,92 +239,4 @@ void asktochangename(GapBuf* gapbuf,PrintInfo* info){
             save(gapbuf);
         }
     }
-}
-
-int main(int argc, char* argv[])
-{	
-    setlocale(LC_ALL, "");
-	initscr();			/* Start curses mode 		  */
-	raw();
-    noecho();
-    curs_set(0);
-    keypad(stdscr,true);
-    GapBuf* nuovobuf = newbuffer(MAX_BUF_SIZE);
-    PrintInfo* info = newprintinfo();
-    int ch = 0;
-    if(argc > 1){
-       if(strlen(argv[1]) >= 256){
-            printf("File name exceeding limit");
-            return 0;
-       }
-       load(argv[1],nuovobuf);
-       strcpy(nuovobuf->filename , argv[1]);
-    }
-    else{
-        strcpy(nuovobuf->filename ,"New File");
-    }
-
-    printgapbuftocurses(nuovobuf,info);
-    while(ch != ctrl('x')){
-        ch = getch();
-        switch(ch){
-            case KEY_BACKSPACE : 
-                                if(backspace(nuovobuf))
-                                    memorizeinput(KEY_BACKSPACE,nuovobuf->buff[nuovobuf->cursor],1,nuovobuf);
-                                printgapbuftocurses(nuovobuf,info);
-                                break;
-            case KEY_DC : 
-                            if(del(nuovobuf))
-                                memorizeinput(KEY_DC,nuovobuf->buff[nuovobuf->gapend - 1],1,nuovobuf);        
-                            printgapbuftocurses(nuovobuf,info);
-                            break;
-            case KEY_LEFT :                             
-                            if(cursor_left(nuovobuf))
-                                memorizeinput(KEY_LEFT,0,0,nuovobuf);
-                            printgapbuftocurses(nuovobuf,info);
-                            break;
-            case KEY_RIGHT :                            
-                            if(cursor_right(nuovobuf))
-                                memorizeinput(KEY_RIGHT,0,0,nuovobuf);
-                            printgapbuftocurses(nuovobuf,info);
-                            break;
-            case KEY_UP : 
-                            if(cursor_up(nuovobuf))
-                                memorizeinput(KEY_UP,nuovobuf->col_mem,0,nuovobuf);
-                            printgapbuftocurses(nuovobuf,info);
-                            break; 
-            case KEY_DOWN : 
-                            if(cursor_down(nuovobuf))
-                                memorizeinput(KEY_DOWN,nuovobuf->col_mem,0,nuovobuf);
-                            printgapbuftocurses(nuovobuf,info);
-                            break;
-            case ctrl('z'):
-                            undo(nuovobuf);
-                            printgapbuftocurses(nuovobuf,info);
-                            break;
-            case ctrl('y'):
-                            redo(nuovobuf);
-                            printgapbuftocurses(nuovobuf,info);
-                            break;
-            case ctrl('s'):
-                            asktochangename(nuovobuf,info);
-                            break;
-            default :  
-                        if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3
-                            memorizeinput(1,ch,0,nuovobuf);
-                        else{
-                            if(ch == 32)
-                               memorizeinput(3,ch,0,nuovobuf);
-                            else
-                               memorizeinput(2,ch,0,nuovobuf);
-                        }
-                        insert(nuovobuf, ch);
-                        printgapbuftocurses(nuovobuf,info);
-                        break;
-        }
-        
-    }
-    endwin();
-    freebuf(nuovobuf);
-    return 0;
 }

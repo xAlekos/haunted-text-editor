@@ -26,6 +26,7 @@ typedef struct gap_buf{
     int line;
 
     int col_mem; //ultima colonna nella quale ci si è spostati.
+    int col;
     char* buff; 
     int buff_size;
     int cursor; //first gapspace
@@ -52,10 +53,11 @@ GapBuf* newbuffer(int initsize){
     newgap_buf->totlines = 1;
     newgap_buf->line = 1;
     newgap_buf->col_mem = 1;
+    newgap_buf->col = 1;
     newgap_buf->gapend = initsize;
     newgap_buf->historypointer = 0;
     newgap_buf->historypointermax = 0;
-    newgap_buf->filename = malloc(256);
+    newgap_buf->filename = (char*)malloc(256);
     return newgap_buf;
 }
 
@@ -63,6 +65,7 @@ void freebuf(GapBuf* gapbuf){
     if(!gapbuf)
         return;
     free(gapbuf->buff);
+    free(gapbuf->filename);
     free(gapbuf);
 }
 
@@ -122,6 +125,7 @@ int givecolumn(GapBuf* gapbuf){ //funzione che ti ritorna in quale colonna
     int i = 1;
     while(gapbuf->cursor - i >= 0 && gapbuf->buff[gapbuf->cursor - i] != '\n')
         i++;
+        gapbuf->col= i ;
         return i;
 
 
@@ -203,10 +207,9 @@ bool cursor_up(GapBuf* gapbuf){
 
 bool cursor_down(GapBuf* gapbuf){
     int col = gapbuf->col_mem; //mantiene in memoria l'ultimo spostamento di colonna per mantenerlo durante up e down
-    int col_now;
     int line = gapbuf->line; 
     if(gapbuf->line < gapbuf->totlines){
-        while((col_now = givecolumn(gapbuf)) < col   || gapbuf->line < line + 1){
+        while(givecolumn(gapbuf) < col   || gapbuf->line < line + 1){
             if(!cursor_right(gapbuf))
                 break;
             if(gapbuf->line == line + 1 && gapbuf->buff[gapbuf->gapend] == '\n')
@@ -320,7 +323,7 @@ void undo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
 
 void redo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e ne fa l'inverso.
     if(gapbuf->historypointer < gapbuf->historypointermax)
-    gapbuf->historypointer++;
+        gapbuf->historypointer++;
     while(gapbuf->historypointer < gapbuf->historypointermax && gapbuf->history[gapbuf->historypointer].operation != -1){
         switch(gapbuf->history[gapbuf->historypointer].operation){
             default: 
@@ -339,11 +342,11 @@ void redo(GapBuf* gapbuf){//dalla pila delle azioni esce l'azione più recente e
                     cursor_right(gapbuf);
                     break;
             case 258 : //down
-                    gapbuf->col_mem=gapbuf->history[gapbuf->historypointer - 1].ch;
+                    gapbuf->col_mem=gapbuf->history[gapbuf->historypointer].ch;
                     cursor_down(gapbuf);
                     break;
             case 259 : //up
-                    gapbuf->col_mem=gapbuf->history[gapbuf->historypointer - 1].ch;
+                    gapbuf->col_mem=gapbuf->history[gapbuf->historypointer].ch;
                     cursor_up(gapbuf);
                     break;
         }
