@@ -73,7 +73,7 @@ void printskills(Ghost* ghost){
 Ghost* newghost(){
     Ghost* newghost = (Ghost*)malloc(sizeof(Ghost));
     char* newghostname = (char*)malloc(256);
-    newghostname = "Joshua";
+    newghostname = "Jimmy";
     newghost->name = newghostname;
     newghost->rage = 0;
     newghost->active_skills_num = 0;

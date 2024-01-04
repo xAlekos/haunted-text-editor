@@ -74,7 +74,10 @@ void writetoeditor(GapBuf* nuovobuf, PrintInfo* info){
                             asktochangename(nuovobuf,info);
                             break;
             case ctrl('d'):
-                            change_filename(nuovobuf,info);
+                            save_history(nuovobuf);
+                            break;
+            case ctrl('r'):
+                            load_history(nuovobuf,"history");
                             break;
             default :  
                         if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3
@@ -99,7 +102,7 @@ void writetoeditor(GapBuf* nuovobuf, PrintInfo* info){
 int main(int argc, char* argv[])
 {	
     initialize_curses();
-    GapBuf* nuovobuf = newbuffer(MAX_BUF_SIZE);
+    GapBuf* nuovobuf = newbuffer(5);
     PrintInfo* info = newprintinfo();
     if(!namefile(nuovobuf,argc,argv))
         return 0;

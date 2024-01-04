@@ -161,6 +161,10 @@ void printgapbuftocursesfromto(GapBuf* gapbuf,PrintInfo* info){
         updatelinecol(gapbuf->buff[i], &char_line, &char_col,&exceeding_line);
     }  
 	addch('|');
+    
+    /*for(int i = gap_front(gapbuf) ; i < gapbuf->gapend; i++)
+        addch('_');*/
+
     for(int i = gapbuf->gapend; i<gapbuf->buff_size;i++){
        checkxbounds(gapbuf,info);
        checkybounds(gapbuf,info);

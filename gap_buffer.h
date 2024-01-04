@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MIN_BUF_SIZE 1024
+#define MIN_BUF_SIZE 5
 #define MAX_BUF_SIZE 65535
 #define MAX_FILE_NAME 256
 #define HISTORY_MAX 2048
@@ -382,6 +382,36 @@ bool save(GapBuf* gapbuf){
     }
 }
 
+bool save_history(GapBuf* gapbuf){
+    FILE* historysave;
+    historysave=fopen("./Histories/history", "w+");
+    if(historysave == NULL)
+        return NULL;
+    for(int i = 0; i<gapbuf->historypointermax;i++){
+        fprintf(historysave,"%d %d\n",gapbuf->history[i].ch,gapbuf->history[i].operation);
+    }
+        return true;
+
+}
+
+bool load_history(GapBuf* gapbuf,char* historyfilename){
+    FILE *loadfrom;
+    char filepath[50];
+    int i = gapbuf->historypointermax;
+    snprintf(filepath,50,"./Histories/%s",historyfilename);
+    loadfrom=fopen(filepath, "r");
+    int count = 0;
+    if(loadfrom == NULL)
+        return false;
+    while(!feof(loadfrom)){
+        fscanf(loadfrom,"%d%d",&gapbuf->history[i].ch,&gapbuf->history[i].operation);
+        i+=1;
+        count++;
+    }
+    gapbuf->historypointermax += count - 1;
+    return true;
+
+}
 
 
 
