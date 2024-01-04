@@ -1,4 +1,6 @@
-#include "cursesprint.h"
+#include "ghost.h"
+
+
 
 bool namefile(GapBuf* nuovobuf,int count, char* argv[]){
     if(count > 1){
@@ -71,6 +73,9 @@ void writetoeditor(GapBuf* nuovobuf, PrintInfo* info){
             case ctrl('s'):
                             asktochangename(nuovobuf,info);
                             break;
+            case ctrl('d'):
+                            change_filename(nuovobuf,info);
+                            break;
             default :  
                         if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3
                             memorizeinput(1,ch,0,nuovobuf);
@@ -87,6 +92,9 @@ void writetoeditor(GapBuf* nuovobuf, PrintInfo* info){
         
     }
 }
+
+
+
 
 int main(int argc, char* argv[])
 {	
