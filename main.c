@@ -29,6 +29,7 @@ void initialize_curses(){
 
 void writetoeditor(GapBuf* nuovobuf, PrintInfo* info){
     int ch;
+    Ghost* nuovoghost = newghost();
     while(ch != ctrl('x')){
         ch = getch();
         switch(ch){
@@ -73,11 +74,11 @@ void writetoeditor(GapBuf* nuovobuf, PrintInfo* info){
             case ctrl('s'):
                             asktochangename(nuovobuf,info);
                             break;
-            case ctrl('d'):
+            case ctrl('r'):
                             save_history(nuovobuf);
                             break;
-            case ctrl('r'):
-                            load_history(nuovobuf,"history");
+            case ctrl('d'):
+                            activate_skill(nuovoghost,nuovobuf,info);
                             break;
             default :  
                         if(ch != 32 && ch != 10) //se è un char qualsiasi l'operazione è 1, se uno spazio è 2, se è enter l'operazione è 3

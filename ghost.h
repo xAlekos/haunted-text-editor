@@ -7,7 +7,7 @@ enum ghost_skills{
     WRITE_MESSAGE,
     CHANGE_HISTORY,
     CHANGE_FILENAME,
-    INTERACT
+    MESSAGE_BOX
 };
 
 typedef struct ghost_skill{
@@ -23,26 +23,24 @@ typedef struct ghost{
     int rage;
 } Ghost;
 
-
-
 void initialize_skill_list(Ghost* ghost){
     GhostSkill* total_skills = (GhostSkill* )malloc(sizeof(GhostSkill) * MAX_SKILLS);
     GhostSkill* active_skills = (GhostSkill* )malloc(sizeof(GhostSkill) * MAX_SKILLS);
     
     total_skills[0].id = MESS_INPUT; 
-    total_skills[0].required_rage = 1;
+    total_skills[0].required_rage = 0;
 
     total_skills[1].id = WRITE_MESSAGE;
-    total_skills[1].required_rage = 3;
+    total_skills[1].required_rage = 0;
 
     total_skills[2].id = CHANGE_HISTORY;
-    total_skills[2].required_rage = 4;
+    total_skills[2].required_rage = 0;
 
     total_skills[3].id = CHANGE_FILENAME;
-    total_skills[3].required_rage = 2;
+    total_skills[3].required_rage = 0;
 
-    total_skills[4].id = INTERACT;
-    total_skills[4].required_rage = 5;
+    total_skills[4].id = MESSAGE_BOX;
+    total_skills[4].required_rage = 0;
 
     ghost->total_skill_list= total_skills;
     ghost->active_skill_list= active_skills;
@@ -132,4 +130,46 @@ void change_filename(GapBuf* gapbuf, PrintInfo* info){ //TODO SISTEMARE LE PAROL
     int selected = rand() % 6;
     strcpy(gapbuf->filename,messages[selected]);
     printgapbuftocurses(gapbuf,info);
+}
+
+void change_history(GapBuf* gapbuf){ //TODO SISTEMARE LE PAROLE
+    char* history_name[]={"history_1\0", "history_2\0","history_3\0"};
+    int selected = rand() % 3;
+    load_history(gapbuf,history_name[selected]);
+}
+
+void message_box(GapBuf* gapbuf, PrintInfo* info){ //TODO SISTEMARE LE PAROLE
+
+
+    char* messages[]={"test\0", "test2\0","test3\0","test4\0","test5\0", "test6\0"};
+    int selected = rand() % 6;
+    printtextbox(messages[selected]);
+}
+
+bool activate_skill(Ghost* ghost,GapBuf* gapbuf, PrintInfo* info){
+    if(ghost->active_skills_num == 0)
+        return false;
+    int selected = rand() % ghost->active_skills_num;
+    int skill = ghost->active_skill_list[selected].id;
+    switch (skill)
+    {
+    case MESS_INPUT:
+        mess_input(gapbuf,info);
+        break;
+    case CHANGE_HISTORY:
+        change_history(gapbuf);
+        break;
+    case MESSAGE_BOX:
+         message_box(gapbuf,info);
+        break;
+    case CHANGE_FILENAME:
+         change_filename(gapbuf,info);
+         break;
+    case WRITE_MESSAGE:
+         write_message(gapbuf,info);
+         break;
+    default:
+        break;
+    }
+    return true;
 }

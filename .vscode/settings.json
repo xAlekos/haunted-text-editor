@@ -10,6 +10,8 @@
         "*.tcc": "c",
         "string_view": "c",
         "istream": "c",
-        "limits": "c"
+        "limits": "c",
+        "cstdlib": "c",
+        "algorithm": "c"
     }
 }

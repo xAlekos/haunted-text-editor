@@ -404,17 +404,18 @@ bool load_history(GapBuf* gapbuf,char* historyfilename){
     if(loadfrom == NULL)
         return false;
     while(!feof(loadfrom)){
+        if(i >= HISTORY_MAX){
+            return false;
+        }
         fscanf(loadfrom,"%d%d",&gapbuf->history[i].ch,&gapbuf->history[i].operation);
         i+=1;
         count++;
     }
-    gapbuf->historypointermax += count - 1;
+        gapbuf->historypointermax += count - 1;
+        gapbuf->historypointer = gapbuf->historypointermax;
     return true;
 
 }
-
-
-
 
 void printgapbuff(GapBuf* gapbuf){
     for(int i = 0; i<gap_front(gapbuf);i++){
