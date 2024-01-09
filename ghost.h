@@ -16,6 +16,9 @@ enum ghost_skills{
 typedef struct ghost_skill{
     int id;
     int required_rage; 
+    bool cooling;
+    int cooldown_time;
+    pthread_t cooldown; 
 } GhostSkill;
 
 typedef struct ghost{
@@ -32,18 +35,28 @@ void initialize_skill_list(Ghost* ghost){
     
     total_skills[0].id = MESS_INPUT; 
     total_skills[0].required_rage = 0;
+    total_skills[0].cooling = false;
+    total_skills[0].cooldown_time = 10;
 
     total_skills[1].id = WRITE_MESSAGE;
     total_skills[1].required_rage = 0;
+    total_skills[1].cooling = false;
+    total_skills[1].cooldown_time = 10;
 
     total_skills[2].id = CHANGE_HISTORY;
     total_skills[2].required_rage = 0;
+    total_skills[2].cooling = false;
+    total_skills[2].cooldown_time = 10;
 
     total_skills[3].id = CHANGE_FILENAME;
     total_skills[3].required_rage = 0;
+    total_skills[3].cooling = false;
+    total_skills[3].cooldown_time = 10;
 
     total_skills[4].id = MESSAGE_BOX;
     total_skills[4].required_rage = 0;
+    total_skills[4].cooling = false;
+    total_skills[4].cooldown_time = 10;
 
     ghost->total_skill_list= total_skills;
     ghost->active_skill_list= active_skills;
@@ -53,6 +66,8 @@ void update_active_skills(Ghost* ghost){
     for(int i = 0; i < MAX_SKILLS; i++){
         if(ghost->total_skill_list[i].required_rage <= ghost->rage){
             ghost->active_skill_list[ghost->active_skills_num].id = ghost->total_skill_list[i].id;
+            ghost->active_skill_list[ghost->active_skills_num].cooldown_time = ghost->total_skill_list[i].cooldown_time;
+            ghost->active_skill_list[ghost->active_skills_num].cooling = false;
             ghost->active_skill_list[ghost->active_skills_num++].required_rage = ghost->total_skill_list[i].required_rage;
             ghost->total_skill_list[i].required_rage = 1000; 
         }
@@ -149,32 +164,47 @@ void message_box(GapBuf* gapbuf, PrintInfo* info){ //TODO SISTEMARE LE PAROLE
     printtextbox(messages[selected]);
 }
 
+void * cooldown(void* skill){
+    GhostSkill* pskill = (GhostSkill*)skill;
+    pskill->cooling = true;
+    sleep(pskill->cooldown_time);
+    pskill->cooling = false;
+}
+
 bool activate_skill(Ghost* ghost,GapBuf* gapbuf, PrintInfo* info){
     if(ghost->active_skills_num == 0)
         return false;
     int selected = rand() % ghost->active_skills_num;
     int skill = ghost->active_skill_list[selected].id;
-    switch (skill)
-    {
-    case MESS_INPUT:
-        mess_input(gapbuf,info);
-        break;
-    case CHANGE_HISTORY:
-        change_history(gapbuf);
-        break;
-    case MESSAGE_BOX:
-         message_box(gapbuf,info);
-        break;
-    case CHANGE_FILENAME:
-         change_filename(gapbuf,info);
-         break;
-    case WRITE_MESSAGE:
-         write_message(gapbuf,info);
-         break;
-    default:
-        break;
+
+    if(ghost->active_skill_list[selected].cooling==false){
+        switch (skill)
+        {
+        case MESS_INPUT:
+            mess_input(gapbuf,info);
+            break;
+        case CHANGE_HISTORY:
+            change_history(gapbuf);
+            break;
+        case MESSAGE_BOX:
+            message_box(gapbuf,info);
+            break;
+        case CHANGE_FILENAME:
+            change_filename(gapbuf,info);
+            break;
+        case WRITE_MESSAGE:
+            write_message(gapbuf,info);
+            break;
+        default:
+            break;
+        }
+        pthread_create(&(ghost->active_skill_list[selected]).cooldown,NULL,cooldown,&(ghost->active_skill_list[selected]));
+        return true;
     }
-    return true;
+    else
+        printtextbox("COOLDOWN");
+        return false;
+
 }
 
 struct ghost_active_args{
@@ -193,7 +223,7 @@ void * ghost_active(void * ta){
     Ghost* nuovoghost = newghost();
     struct ghost_active_args* aaaargs = (struct ghost_active_args*)ta;
     while(1){
-    sleep(30);
+    sleep(1);
     activate_skill(nuovoghost,aaaargs->gapbuf,aaaargs->info);
     }
     
