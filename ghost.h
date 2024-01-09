@@ -1,4 +1,7 @@
 #include "cursesprint.h"
+#include <pthread.h> 
+#include <unistd.h>
+#include <pthread.h>
 
 #define MAX_SKILLS 5
 
@@ -172,4 +175,31 @@ bool activate_skill(Ghost* ghost,GapBuf* gapbuf, PrintInfo* info){
         break;
     }
     return true;
+}
+
+struct ghost_active_args{
+    GapBuf* gapbuf;
+    PrintInfo* info;
+};
+
+struct ghost_active_args* set_ghost_active_args(GapBuf* gapbuf, PrintInfo* info){
+    struct ghost_active_args* newargs = malloc(sizeof(struct ghost_active_args));
+    newargs->gapbuf=gapbuf;
+    newargs->info=info;
+    return newargs;
+}
+
+void * ghost_active(void * ta){
+    Ghost* nuovoghost = newghost();
+    struct ghost_active_args* aaaargs = (struct ghost_active_args*)ta;
+    while(1){
+    sleep(30);
+    activate_skill(nuovoghost,aaaargs->gapbuf,aaaargs->info);
+    }
+    
+    free(nuovoghost->total_skill_list);
+    free(nuovoghost->active_skill_list);
+    free(nuovoghost->name);
+    free(nuovoghost);
+    free(aaaargs);
 }

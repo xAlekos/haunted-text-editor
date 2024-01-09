@@ -12,6 +12,7 @@
         "istream": "c",
         "limits": "c",
         "cstdlib": "c",
-        "algorithm": "c"
+        "algorithm": "c",
+        "time.h": "c"
     }
 }
