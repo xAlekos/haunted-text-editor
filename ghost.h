@@ -27,6 +27,7 @@ typedef struct ghost{
     GhostSkill* total_skill_list;
     int active_skills_num;
     int rage;
+    bool exorcised;
 } Ghost;
 
 void initialize_skill_list(Ghost* ghost){
@@ -36,25 +37,25 @@ void initialize_skill_list(Ghost* ghost){
     total_skills[0].id = MESS_INPUT; 
     total_skills[0].required_rage = 0;
     total_skills[0].cooling = false;
-    total_skills[0].cooldown_time = 10;
+    total_skills[0].cooldown_time = 15;
 
     total_skills[1].id = WRITE_MESSAGE;
-    total_skills[1].required_rage = 0;
+    total_skills[1].required_rage = 3;
     total_skills[1].cooling = false;
     total_skills[1].cooldown_time = 10;
 
     total_skills[2].id = CHANGE_HISTORY;
-    total_skills[2].required_rage = 0;
+    total_skills[2].required_rage = 2;
     total_skills[2].cooling = false;
     total_skills[2].cooldown_time = 10;
 
     total_skills[3].id = CHANGE_FILENAME;
-    total_skills[3].required_rage = 0;
+    total_skills[3].required_rage = 3;
     total_skills[3].cooling = false;
     total_skills[3].cooldown_time = 10;
 
     total_skills[4].id = MESSAGE_BOX;
-    total_skills[4].required_rage = 0;
+    total_skills[4].required_rage = 4;
     total_skills[4].cooling = false;
     total_skills[4].cooldown_time = 10;
 
@@ -93,14 +94,33 @@ Ghost* newghost(){
     newghost->name = newghostname;
     newghost->rage = 0;
     newghost->active_skills_num = 0;
+    newghost->exorcised = false;
     initialize_skill_list(newghost);
     update_active_skills(newghost);
     return newghost;
 }
 
+void* rage_timer(void* args){
+    int sleeping_time = 60;
+    Ghost* ghost = (Ghost*)args;
+    while(!ghost->exorcised){
+        sleep(sleeping_time);
+        ghost->rage+=1;
+        update_active_skills(ghost);
+        sleeping_time*=1.5;
+    }
+}
+
+void update_rage(Ghost* ghost, GapBuf* gapbuf){
+    pthread_t timer;
+    pthread_create(&timer, NULL,rage_timer, (void*) ghost);
+}
+
+
+
 void mess_input(GapBuf* gapbuf,PrintInfo* info){
     int inputs[] = {KEY_BACKSPACE, KEY_DC,KEY_LEFT,KEY_RIGHT,KEY_UP,KEY_DOWN};
-    int selected = rand() % 7;
+    int selected = rand() % 10;
     if(selected >= 6)
         selected = (rand() % 127) + 32;
     else
@@ -127,9 +147,8 @@ void mess_input(GapBuf* gapbuf,PrintInfo* info){
             default :  
                         insert(gapbuf, selected);
                         break;
-            printgapbuftocurses(gapbuf,info);
         }
-
+        printgapbuftocurses(gapbuf,info);
 
 }
 
@@ -162,6 +181,7 @@ void message_box(GapBuf* gapbuf, PrintInfo* info){ //TODO SISTEMARE LE PAROLE
     char* messages[]={"test\0", "test2\0","test3\0","test4\0","test5\0", "test6\0"};
     int selected = rand() % 6;
     printtextbox(messages[selected]);
+    
 }
 
 void * cooldown(void* skill){
@@ -202,7 +222,6 @@ bool activate_skill(Ghost* ghost,GapBuf* gapbuf, PrintInfo* info){
         return true;
     }
     else
-        printtextbox("COOLDOWN");
         return false;
 
 }
@@ -219,17 +238,18 @@ struct ghost_active_args* set_ghost_active_args(GapBuf* gapbuf, PrintInfo* info)
     return newargs;
 }
 
-void * ghost_active(void * ta){
+void * ghost_active(void * args){
     Ghost* nuovoghost = newghost();
-    struct ghost_active_args* aaaargs = (struct ghost_active_args*)ta;
-    while(1){
+    struct ghost_active_args* pargs = (struct ghost_active_args*)args;
+    update_rage(nuovoghost,pargs->gapbuf);
+    while(!nuovoghost->exorcised){
     sleep(1);
-    activate_skill(nuovoghost,aaaargs->gapbuf,aaaargs->info);
+    activate_skill(nuovoghost,pargs->gapbuf,pargs->info);
     }
     
     free(nuovoghost->total_skill_list);
     free(nuovoghost->active_skill_list);
     free(nuovoghost->name);
     free(nuovoghost);
-    free(aaaargs);
+    free(pargs);
 }
